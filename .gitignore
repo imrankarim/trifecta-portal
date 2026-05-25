@@ -1,0 +1,5 @@
+# Claude Code local settings (per-machine, never commit)
+.claude/
+
+# macOS
+.DS_Store

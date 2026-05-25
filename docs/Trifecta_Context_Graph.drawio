@@ -1,0 +1,172 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="5dlPpyZNtD7JayQEZ9HR" name="Page-1">
+    <mxGraphModel dx="1205" dy="788" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="member" parent="1" style="ellipse;fillColor=#2563EB;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=14;shadow=1;" value="Member" vertex="1">
+          <mxGeometry height="100" width="100" x="390" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="forum" parent="1" style="ellipse;fillColor=#059669;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Local&#xa;Forum" vertex="1">
+          <mxGeometry height="78" width="78" x="401" y="21" as="geometry" />
+        </mxCell>
+        <mxCell id="board" parent="1" style="ellipse;fillColor=#7C3AED;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Local Board" vertex="1">
+          <mxGeometry height="94" width="101" x="552" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="global" parent="1" style="ellipse;fillColor=#7C3AED;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="EO Global Event" vertex="1">
+          <mxGeometry height="93" width="106" x="632" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="sap" parent="1" style="ellipse;fillColor=#DC2626;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="SAP&#xa;(Strategic&#xa;Alliance Partner)" vertex="1">
+          <mxGeometry height="90" width="110" x="601" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="micro" parent="1" style="ellipse;fillColor=#059669;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Learning &amp;&#xa;Social &amp;&#xa;Micro-Events" vertex="1">
+          <mxGeometry height="109" width="106" x="481" y="477" as="geometry" />
+        </mxCell>
+        <mxCell id="indus" parent="1" style="ellipse;fillColor=#0891B2;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="MyEO&#xa;Industry Forum&#xa;University" vertex="1">
+          <mxGeometry height="108" width="115" x="321" y="477" as="geometry" />
+        </mxCell>
+        <mxCell id="eoa" parent="1" style="ellipse;fillColor=#D97706;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="EOA" vertex="1">
+          <mxGeometry height="78" width="78" x="197" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="comm" parent="1" style="ellipse;fillColor=#0891B2;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="WhatsApp" vertex="1">
+          <mxGeometry height="78" width="78" x="170" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="slp" parent="1" style="ellipse;fillColor=#D97706;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="SLP" vertex="1">
+          <mxGeometry height="78" width="78" x="250" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="chapter" parent="1" style="ellipse;fillColor=#1E1B4B;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Chapter" vertex="1">
+          <mxGeometry height="86" width="86" x="28" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="ed" parent="1" style="ellipse;fillColor=#1E40AF;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="Executive&#xa;Director" vertex="1">
+          <mxGeometry height="86" width="90" x="800" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="renewal" parent="1" style="ellipse;fillColor=#BE123C;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="Renewal /&#xa;Churn Risk" vertex="1">
+          <mxGeometry height="86" width="100" x="385" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#059669;fontColor=#059669;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.7;entryY=1;entryDx=0;entryDy=0;" target="forum" value="1. Placed In">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="slp" style="curved=1;endArrow=block;endFill=1;strokeColor=#D97706;fontColor=#D97706;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="member" value="2. Engaged in EO">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#7C3AED;fontColor=#7C3AED;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="global" value="3. Registered For">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#DC2626;fontColor=#DC2626;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="sap" value="4. Interacted With">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#059669;fontColor=#059669;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="micro" value="5. Attended">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#0891B2;fontColor=#0891B2;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="indus" value="6. Participates In">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#D97706;fontColor=#D97706;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="eoa" value="7. Graduated From">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#7C3AED;fontColor=#7C3AED;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="board" value="8. Served On">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_renewal" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#BE123C;fontColor=#BE123C;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="renewal" value="9. Renews / At Risk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#0891B2;fontColor=#0891B2;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="comm" value="10. Engages Via">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-1" parent="1" style="ellipse;fillColor=#2563EB;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=14;shadow=1;" value="Member" vertex="1">
+          <mxGeometry height="100" width="100" x="390" y="242" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="member" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E1B4B;fontColor=#1E1B4B;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="chapter" value="11. Belongs To">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-2" parent="1" style="ellipse;fillColor=#059669;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Local&#xa;Forum" vertex="1">
+          <mxGeometry height="78" width="78" x="401" y="21" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="board" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E1B4B;fontColor=#1E1B4B;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="chapter" value="12. Governs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-3" parent="1" style="ellipse;fillColor=#7C3AED;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Local Board" vertex="1">
+          <mxGeometry height="94" width="101" x="552" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="ed" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E40AF;fontColor=#1E40AF;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="chapter" value="13. Leads">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-4" parent="1" style="ellipse;fillColor=#7C3AED;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="EO Global Event" vertex="1">
+          <mxGeometry height="93" width="106" x="632" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="ed" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E40AF;fontColor=#1E40AF;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="renewal" value="14. Monitors">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-5" parent="1" style="ellipse;fillColor=#DC2626;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="SAP&#xa;(Strategic&#xa;Alliance Partner)" vertex="1">
+          <mxGeometry height="90" width="110" x="601" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-6" parent="1" style="ellipse;fillColor=#059669;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Learning &amp;&#xa;Social &amp;&#xa;Micro-Events" vertex="1">
+          <mxGeometry height="109" width="106" x="481" y="477" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-7" parent="1" style="ellipse;fillColor=#0891B2;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="MyEO&#xa;Industry Forum&#xa;University" vertex="1">
+          <mxGeometry height="108" width="115" x="321" y="477" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-8" parent="1" style="ellipse;fillColor=#D97706;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="EOA" vertex="1">
+          <mxGeometry height="78" width="78" x="197" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-9" parent="1" style="ellipse;fillColor=#0891B2;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="WhatsApp" vertex="1">
+          <mxGeometry height="78" width="78" x="170" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-10" parent="1" style="ellipse;fillColor=#D97706;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="SLP" vertex="1">
+          <mxGeometry height="78" width="78" x="250" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-11" parent="1" style="ellipse;fillColor=#1E1B4B;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=11;shadow=1;" value="Chapter" vertex="1">
+          <mxGeometry height="86" width="86" x="28" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-12" parent="1" style="ellipse;fillColor=#1E40AF;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="Executive&#xa;Director" vertex="1">
+          <mxGeometry height="86" width="90" x="800" y="205" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-13" parent="1" style="ellipse;fillColor=#BE123C;fontColor=#ffffff;strokeColor=#ffffff;strokeWidth=2;fontStyle=1;fontSize=10;shadow=1;" value="Renewal /&#xa;Churn Risk" vertex="1">
+          <mxGeometry height="86" width="100" x="385" y="635" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-14" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#059669;fontColor=#059669;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.7;entryY=1;entryDx=0;entryDy=0;" target="zcLOUl4_Z69wTjXuzw8z-2" value="1. Placed In">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-15" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-10" style="curved=1;endArrow=block;endFill=1;strokeColor=#D97706;fontColor=#D97706;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-1" value="2. Engaged in EO">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-16" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#7C3AED;fontColor=#7C3AED;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-4" value="3. Registered For">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-17" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#DC2626;fontColor=#DC2626;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-5" value="4. Interacted With">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-18" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#059669;fontColor=#059669;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-6" value="5. Attended">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-19" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#0891B2;fontColor=#0891B2;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-7" value="6. Participates In">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-20" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#D97706;fontColor=#D97706;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-8" value="7. Graduated From">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-21" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#7C3AED;fontColor=#7C3AED;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-3" value="8. Served On">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-22" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#BE123C;fontColor=#BE123C;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-13" value="9. Renews / At Risk">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-23" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#0891B2;fontColor=#0891B2;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-9" value="10. Engages Via">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-24" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-1" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E1B4B;fontColor=#1E1B4B;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-11" value="11. Belongs To">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-25" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-3" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E1B4B;fontColor=#1E1B4B;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-11" value="12. Governs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-26" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-12" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E40AF;fontColor=#1E40AF;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-11" value="13. Leads">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="zcLOUl4_Z69wTjXuzw8z-27" edge="1" parent="1" source="zcLOUl4_Z69wTjXuzw8z-12" style="curved=1;endArrow=block;endFill=1;strokeColor=#1E40AF;fontColor=#1E40AF;fontStyle=1;fontSize=10;labelBackgroundColor=#ffffff;" target="zcLOUl4_Z69wTjXuzw8z-13" value="14. Monitors">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
