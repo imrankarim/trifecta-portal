@@ -1584,6 +1584,29 @@ Phase 4 Deliverables:
 Recommendations, not mandates. Flag strong objections before diverging.
 
   
+
+\[v1.2 Phase 1 Implementation Note — added 2026-05-26\]
+
+  
+
+The Phase 1 build deliberately swaps this section's recommendations for a Next.js 14 (App Router) + Supabase (Postgres + Auth + RLS + Vault) + Vercel (hosting + Cron) + Resend (email) stack. The Claude API model behind the LLMProvider interface is `claude-sonnet-4-6`. See `docs/Trifecta_Phase1_BuildPlan_for_Imran.md` for the full week-by-week build plan and the `trifecta-stack-rationale` memory for the why.
+
+  
+
+Rationale in one paragraph: the Phase 1 builder (Imran Karim) is a non-technical founder using Claude Code as his developer. The recommendations below assume a professional Node.js dev shop. Express + raw Postgres + custom JWT + Render + BullMQ multiplies the ops surface area in a way that is unsustainable for a solo non-technical operator. The substituted stack collapses that surface (auth + database + RLS bundled in Supabase; deploy + cron bundled in Vercel; transactional email in Resend) without compromising any §8 non-negotiable. Every Trifecta UUID, every `eo_global_member_id`, every `chapter_id` on every table, the DataSource and LLMProvider abstractions, multi-chapter `user_chapter_roles`, encrypted credentials, scoring engine unit tests, the Event Calendar engine (§2.10), the auto-invite lifecycle hooks (§5.7) — all preserved and shipping on the Phase 1 stack.
+
+  
+
+Migration safety: nothing in the data model, scoring engine, connector interfaces, or LLM abstraction is Supabase-specific. If a chapter or operator later hires a professional Node.js team for Phase 2+ scale, the recommendations below describe the target architecture, and the existing Phase 1 codebase ports cleanly.
+
+  
+
+The recommendations below remain valid as the reference architecture. Read them as "what the system would look like at multi-chapter Phase 3 scale with a professional team," not "what Phase 1 ships on."
+
+  
+  
+
+  
   
 
 7.1 Backend
