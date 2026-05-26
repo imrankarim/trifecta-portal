@@ -1,0 +1,2276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trifecta — EO Chapter Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ====================  RESET & BASE  ==================== */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    color: #1A1813;
+    background: #ECE4D5;
+    line-height: 1.5;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; }
+  a { color: inherit; text-decoration: none; }
+  ul { list-style: none; }
+
+  /* ====================  COLOR TOKENS  ==================== */
+  :root {
+    --bg-app: #ECE4D5;
+    --bg-card: #F8F4ED;
+    --bg-card-elevated: #FCFAF6;
+    --ink: #1A1813;
+    --ink-muted: #5C5748;
+    --ink-faint: #8C8778;
+    --navy: #1B2A4E;
+    --navy-soft: #2A3D63;
+    --copper: #C2603D;
+    --copper-soft: #E89D7C;
+    --border: #E8DFD0;
+    --border-strong: #C7BDA8;
+    --good: #2D6A3F;
+    --bad: #8B2020;
+  }
+
+  /* ====================  LAYOUT SHELL  ==================== */
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+  .app-top {
+    grid-column: 1 / -1;
+    background: var(--navy);
+    color: var(--bg-card);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #0F1A33;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 30px; height: 30px;
+    border: 2px solid var(--copper);
+    border-radius: 5px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--copper); font-weight: 800; font-size: 14px;
+  }
+  .brand-name { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 12px; color: #B8B3A6; font-weight: 500; }
+
+  .top-meta { display: flex; align-items: center; gap: 24px; font-size: 13px; color: #B8B3A6; }
+  .role-switcher {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 14px;
+    border: 1px solid #2D3E5F;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.04);
+    color: var(--bg-card);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .role-switcher:hover { background: rgba(255,255,255,0.08); }
+  .role-switcher .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--copper); color: var(--bg-card);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11px;
+  }
+  .role-switcher .role-info { display: flex; flex-direction: column; line-height: 1.2; }
+  .role-switcher .role-name { font-size: 12px; color: var(--bg-card); font-weight: 600; }
+  .role-switcher .role-tag { font-size: 10px; color: #B8B3A6; letter-spacing: 0.04em; text-transform: uppercase; }
+  .chev { color: #B8B3A6; font-size: 11px; }
+
+  /* ====================  SIDEBAR  ==================== */
+  .sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    overflow-y: auto;
+  }
+  .nav-section {
+    padding: 0 16px;
+    margin-bottom: 24px;
+  }
+  .nav-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding: 0 10px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 10px;
+    border-radius: 4px;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+  }
+  .nav-item:hover { background: var(--bg-card-elevated); }
+  .nav-item.active {
+    background: var(--navy); color: var(--bg-card);
+  }
+  .nav-item.active .nav-badge { background: var(--copper); color: var(--bg-card); border-color: transparent; }
+  .nav-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    padding: 1px 7px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    color: var(--ink-muted);
+    background: var(--bg-card-elevated);
+  }
+  .nav-badge.critical { background: var(--copper); color: var(--bg-card); border-color: transparent; }
+  .nav-sub {
+    padding-left: 22px; font-size: 12px;
+    color: var(--ink-muted); font-weight: 500;
+  }
+
+  /* ====================  MAIN  ==================== */
+  .main {
+    padding: 36px 40px 60px;
+    overflow-y: auto;
+    background: var(--bg-app);
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .page-header {
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .page-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--copper); margin-bottom: 6px;
+  }
+  .page-title {
+    font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy);
+    margin-bottom: 6px; line-height: 1.15;
+  }
+  .page-desc {
+    font-size: 14px; color: var(--ink-muted); max-width: 580px;
+  }
+  .page-actions { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    padding: 9px 16px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--navy); color: var(--bg-card);
+  }
+  .btn-primary:hover { background: var(--navy-soft); }
+  .btn-outline {
+    background: transparent; color: var(--navy);
+    border: 1.5px solid var(--navy);
+  }
+  .btn-outline:hover { background: var(--navy); color: var(--bg-card); }
+  .btn-accent {
+    background: var(--copper); color: var(--bg-card);
+  }
+
+  /* ====================  STAT CARDS  ==================== */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .stat-card {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+  }
+  .stat-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 6px;
+  }
+  .stat-value {
+    font-size: 30px; font-weight: 800;
+    color: var(--navy); letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .stat-of { font-size: 16px; color: var(--ink-faint); font-weight: 600; }
+  .stat-delta {
+    font-size: 12px; font-weight: 600;
+    color: var(--copper);
+    margin-top: 6px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .stat-delta.good { color: var(--good); }
+  .stat-delta.neutral { color: var(--ink-muted); }
+
+  /* ====================  CHAPTER ROLL-UP TABLE (Ronnie's view)  ==================== */
+  .chapters-table {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+  .table-header {
+    display: grid;
+    grid-template-columns: 1.5fr 0.7fr 0.7fr 0.8fr 1.2fr 0.8fr 0.8fr;
+    gap: 16px;
+    padding: 12px 24px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-strong);
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .chapter-row {
+    display: grid;
+    grid-template-columns: 1.5fr 0.7fr 0.7fr 0.8fr 1.2fr 0.8fr 0.8fr;
+    gap: 16px;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .chapter-row:last-child { border-bottom: none; }
+  .chapter-row:hover { background: var(--bg-card); }
+  .chapter-name {
+    font-weight: 700; color: var(--navy);
+    font-size: 15px; letter-spacing: -0.01em;
+  }
+  .chapter-region {
+    font-size: 11px; color: var(--ink-faint);
+    font-weight: 500; margin-top: 2px;
+  }
+  .chapter-stat { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .chapter-stat.critical { color: var(--copper); }
+  .chapter-stat.muted { color: var(--ink-muted); font-weight: 600; font-size: 14px; }
+  .risk-bar {
+    display: flex; height: 6px; border-radius: 2px; overflow: hidden;
+    background: var(--border);
+  }
+  .risk-bar-seg { height: 100%; }
+  .risk-bar-seg.critical { background: var(--copper); }
+  .risk-bar-seg.high { background: var(--navy); }
+  .risk-bar-seg.medium { background: var(--border-strong); }
+  .risk-bar-label {
+    font-size: 11px; font-weight: 500; color: var(--ink-faint);
+    margin-top: 4px;
+  }
+  .sync-status {
+    font-size: 11px; font-weight: 500; color: var(--ink-muted);
+  }
+  .sync-dot {
+    display: inline-block; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--good); margin-right: 4px;
+  }
+  .sync-dot.warn { background: var(--copper); }
+  .sync-dot.error { background: var(--bad); }
+
+  /* ====================  CHAPTER OVERVIEW (single chapter)  ==================== */
+  .chapter-shell-header {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 8px;
+  }
+  .chapter-shell-title {
+    font-size: 32px; font-weight: 800; color: var(--navy);
+    letter-spacing: -0.02em;
+  }
+  .connector-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 3px;
+    font-size: 11px; font-weight: 600;
+    color: var(--ink-muted);
+    background: var(--bg-card-elevated);
+  }
+  .connector-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--good);
+  }
+  .connector-badge.warn .dot { background: var(--copper); }
+
+  /* ====================  AT-RISK CARDS (board member demo)  ==================== */
+  .members-list { display: flex; flex-direction: column; gap: 16px; }
+  .member-card {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 0.9fr;
+    gap: 28px;
+    align-items: start;
+    transition: border-color 0.15s;
+  }
+  .member-card:hover { border-color: var(--border-strong); }
+  .member-name {
+    font-size: 18px; font-weight: 700; color: var(--navy);
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .member-meta {
+    font-size: 12px; color: var(--ink-faint); margin-bottom: 14px;
+  }
+  .tier-badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: 3px;
+  }
+  .tier-badge.critical { background: var(--copper); color: var(--bg-card); }
+  .tier-badge.high { background: var(--navy); color: var(--bg-card); }
+  .tier-badge.medium { background: var(--border); color: var(--ink); border: 1px solid var(--border-strong); }
+  .tier-badge.low { background: transparent; color: var(--ink-muted); border: 1px solid var(--border-strong); }
+  .score {
+    font-size: 36px; font-weight: 800; color: var(--navy);
+    letter-spacing: -0.03em; margin-top: 12px;
+  }
+  .score-of {
+    font-size: 14px; color: var(--ink-faint); font-weight: 600;
+  }
+  .signals-label, .action-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 10px;
+  }
+  .signal {
+    font-size: 13px; color: var(--ink); padding: 4px 0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .signal::before { content: '—'; color: var(--copper); font-weight: 700; flex-shrink: 0; }
+  .signal em { color: var(--ink-muted); font-style: italic; }
+  .action-text {
+    font-size: 14px; color: var(--ink); line-height: 1.55;
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .action-reason {
+    font-size: 12px; color: var(--ink-muted); line-height: 1.55;
+    font-style: italic;
+  }
+  .action-buttons { display: flex; gap: 8px; margin-top: 16px; }
+
+  /* ====================  MEMBER DETAIL  ==================== */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .detail-profile {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+  }
+  .profile-photo {
+    width: 88px; height: 88px;
+    background: var(--navy); color: var(--copper);
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 32px;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .detail-name {
+    font-size: 22px; font-weight: 800; color: var(--navy);
+    letter-spacing: -0.02em; margin-bottom: 4px;
+  }
+  .detail-company {
+    font-size: 13px; color: var(--ink-muted); margin-bottom: 16px;
+  }
+  .profile-meta { font-size: 12px; color: var(--ink); padding: 12px 0; border-top: 1px solid var(--border); }
+  .profile-meta:first-of-type { border-top: 1px solid var(--border-strong); margin-top: 8px; }
+  .profile-meta-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px;
+  }
+  .profile-meta-value { font-size: 13px; font-weight: 600; color: var(--ink); }
+
+  .detail-main {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+  }
+  .detail-section { margin-bottom: 28px; }
+  .detail-section:last-child { margin-bottom: 0; }
+  .detail-section-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--copper);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .signal-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 100px;
+    gap: 16px;
+    padding: 10px 0;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .signal-row:last-child { border-bottom: none; }
+  .signal-name { color: var(--ink); font-weight: 600; }
+  .signal-value { color: var(--ink); font-weight: 700; text-align: right; }
+  .signal-trend {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em;
+    text-transform: uppercase; text-align: right;
+  }
+  .signal-trend.up { color: var(--good); }
+  .signal-trend.down { color: var(--copper); }
+  .signal-trend.flat { color: var(--ink-faint); }
+
+  /* ====================  ACTION ITEMS  ==================== */
+  .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border-strong); }
+  .tab {
+    padding: 10px 18px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-faint);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--navy); border-bottom-color: var(--copper); }
+  .tab .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    padding: 1px 6px; border-radius: 2px;
+    background: var(--bg-card-elevated); border: 1px solid var(--border);
+    color: var(--ink-muted);
+    margin-left: 6px;
+  }
+
+  .action-items-list { display: flex; flex-direction: column; gap: 8px; }
+  .action-item {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 20px;
+    align-items: center;
+  }
+  .action-item.stale { border-color: var(--copper); border-left: 3px solid var(--copper); padding-left: 18px; }
+  .action-item-text {
+    font-size: 14px; color: var(--ink); font-weight: 600;
+  }
+  .action-item-meta {
+    font-size: 11px; color: var(--ink-muted);
+    margin-top: 4px; font-weight: 500;
+  }
+  .action-item-meta strong { color: var(--ink); }
+  .action-item-due {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink-muted); text-align: right;
+  }
+  .action-item-due.stale { color: var(--copper); }
+  .action-item-assignee {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--ink); font-weight: 600;
+  }
+  .mini-avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--navy); color: var(--copper);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 9px;
+  }
+  .status-pill {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    border: 1px solid var(--border-strong);
+    color: var(--ink-muted);
+  }
+  .status-pill.open { color: var(--navy); border-color: var(--navy); }
+  .status-pill.progress { color: var(--copper); border-color: var(--copper); }
+  .status-pill.done { color: var(--good); border-color: var(--good); }
+
+  /* ====================  CONNECTORS  ==================== */
+  .connectors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .connector-card {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .connector-head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .connector-name {
+    font-size: 18px; font-weight: 800; color: var(--navy);
+    letter-spacing: -0.01em; margin-bottom: 2px;
+  }
+  .connector-chapter {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .connector-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--good);
+  }
+  .connector-status.pending { color: var(--copper); }
+  .connector-status::before {
+    content: ''; width: 8px; height: 8px;
+    border-radius: 50%; background: currentColor;
+  }
+  .connector-rows { font-size: 12px; color: var(--ink); }
+  .connector-row {
+    display: flex; justify-content: space-between;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+  .connector-row span:first-child { color: var(--ink-muted); font-weight: 500; }
+  .connector-row span:last-child { color: var(--ink); font-weight: 600; }
+
+  /* ====================  TWO-COLUMN  ==================== */
+  .two-col {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px;
+    margin-bottom: 28px;
+  }
+  .panel {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+  }
+  .panel-title {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--copper);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .panel-list-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .panel-list-item:last-child { border-bottom: none; }
+  .panel-list-name { color: var(--ink); font-weight: 600; }
+  .panel-list-value { color: var(--navy); font-weight: 700; }
+
+  /* ====================  ROLE INTELLIGENCE PREVIEW  ==================== */
+  .role-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 32px;
+  }
+  .role-chip {
+    padding: 12px 14px;
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px; font-weight: 600; color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .role-chip:hover { border-color: var(--border-strong); }
+  .role-chip.active {
+    border-color: var(--copper); background: var(--bg-card);
+    color: var(--navy); font-weight: 700;
+  }
+  .role-chip-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--ink-faint);
+    font-weight: 500; letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  /* ====================  RENEWAL PIPELINE  ==================== */
+  .renewal-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 28px;
+  }
+  .renewal-tile {
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--bg-card-elevated);
+  }
+  .renewal-tile.critical { border-color: var(--copper); }
+  .renewal-tile-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 4px;
+  }
+  .renewal-tile-value { font-size: 28px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+  .renewal-tile-pct { font-size: 12px; color: var(--ink-muted); margin-top: 4px; font-weight: 600; }
+
+  /* ====================  EVENT CALENDAR  ==================== */
+  .event-list { display: flex; flex-direction: column; gap: 10px; }
+  .event-card {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px;
+    display: grid;
+    grid-template-columns: 70px 1fr auto auto;
+    gap: 20px;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+  .event-card:hover { border-color: var(--border-strong); }
+  .event-date {
+    text-align: center;
+    border-right: 1px solid var(--border);
+    padding-right: 14px;
+  }
+  .event-date-month {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--copper);
+  }
+  .event-date-day {
+    font-size: 26px; font-weight: 800; color: var(--navy);
+    letter-spacing: -0.02em; line-height: 1.1;
+  }
+  .event-date-time {
+    font-size: 11px; color: var(--ink-faint); font-weight: 600;
+  }
+  .event-type-badge {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 3px;
+    border: 1px solid currentColor;
+    margin-bottom: 6px;
+  }
+  .event-type-badge.learning { color: var(--navy); }
+  .event-type-badge.social { color: var(--copper); }
+  .event-type-badge.board { color: var(--ink); background: var(--border); border-color: transparent; }
+  .event-type-badge.forum { color: var(--navy); background: rgba(27,42,78,0.08); border-color: transparent; }
+  .event-type-badge.gsea { color: var(--copper); background: rgba(194,96,61,0.1); border-color: transparent; }
+  .event-type-badge.sap { color: var(--ink-muted); }
+  .event-type-badge.slp { color: var(--copper); }
+  .event-type-badge.eoa { color: var(--good); }
+  .event-type-badge.regional { color: var(--navy); }
+  .event-title { font-size: 15px; font-weight: 700; color: var(--ink); letter-spacing: -0.005em; margin-bottom: 2px; }
+  .event-meta { font-size: 11px; color: var(--ink-faint); font-weight: 500; }
+  .event-invite-stats {
+    text-align: right; font-size: 12px;
+  }
+  .event-invite-line { color: var(--ink-muted); font-weight: 500; margin-bottom: 2px; }
+  .event-invite-counts {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 600; color: var(--ink);
+  }
+  .event-invite-counts strong { color: var(--good); font-weight: 700; }
+  .event-invite-counts em { color: var(--copper); font-style: normal; font-weight: 700; }
+
+  .auto-invite-feed {
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .feed-item {
+    display: flex; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  .feed-icon {
+    width: 32px; height: 32px;
+    border-radius: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: var(--copper);
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+  .feed-icon.lapsed { color: var(--bad); }
+  .feed-icon.new { color: var(--good); }
+  .feed-icon.cancel { color: var(--ink-muted); }
+  .feed-text { flex: 1; line-height: 1.5; color: var(--ink); }
+  .feed-text strong { color: var(--navy); font-weight: 700; }
+  .feed-time { font-size: 11px; color: var(--ink-faint); margin-top: 2px; font-weight: 500; }
+
+  .event-types-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  }
+  .event-type-tile {
+    background: var(--bg-card-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .event-type-tile-name {
+    font-weight: 700; color: var(--navy); margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .event-type-tile-rule {
+    font-size: 10px; color: var(--ink-faint);
+    font-weight: 500; line-height: 1.4;
+  }
+
+  /* ====================  EMPTY STATE  ==================== */
+  .placeholder-note {
+    padding: 18px 20px;
+    background: var(--bg-card);
+    border: 1px dashed var(--border-strong);
+    border-radius: 4px;
+    font-size: 12px; color: var(--ink-muted);
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===========  TOP BAR  =========== -->
+  <header class="app-top">
+    <div class="brand">
+      <span class="logo">T³</span>
+      <div>
+        <div class="brand-name">Trifecta</div>
+        <div class="brand-sub">Chapter Intelligence · v1.2</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <span>Monday · 26 May 2026</span>
+      <div class="role-switcher">
+        <span class="avatar">RW</span>
+        <span class="role-info">
+          <span class="role-name">Ronnie Walsh</span>
+          <span class="role-tag">Regional Operator · US Central</span>
+        </span>
+        <span class="chev">▾</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===========  SIDEBAR  =========== -->
+  <aside class="sidebar">
+
+    <div class="nav-section">
+      <div class="nav-label">Regional View</div>
+      <div class="nav-item active" data-view="regional">
+        <span>Dashboard</span>
+      </div>
+      <div class="nav-item" data-view="chapters-all">
+        <span>All Chapters</span>
+        <span class="nav-badge">14</span>
+      </div>
+      <div class="nav-item" data-view="analytics">
+        <span>Cross-Chapter Analytics</span>
+        <span class="nav-badge">P2</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Chapters</div>
+      <div class="nav-item" data-view="chapter-dallas">
+        <span>EO Dallas</span>
+        <span class="nav-badge critical">12</span>
+      </div>
+      <div class="nav-item" data-view="chapter-fortworth">
+        <span>EO Fort Worth</span>
+        <span class="nav-badge critical">9</span>
+      </div>
+      <div class="nav-item" data-view="placeholder">
+        <span>EO Austin</span>
+        <span class="nav-badge">7</span>
+      </div>
+      <div class="nav-item" data-view="placeholder">
+        <span>EO Houston</span>
+        <span class="nav-badge">11</span>
+      </div>
+      <div class="nav-item" data-view="placeholder">
+        <span>EO San Antonio</span>
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item" data-view="placeholder">
+        <span>EO Oklahoma City</span>
+        <span class="nav-badge">4</span>
+      </div>
+      <div class="nav-item" data-view="placeholder">
+        <span>+ 8 more</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Chapter (Dallas)</div>
+      <div class="nav-item" data-view="at-risk">
+        <span>At-Risk This Week</span>
+        <span class="nav-badge critical">12</span>
+      </div>
+      <div class="nav-item" data-view="member-detail">
+        <span>Member · M. de Koning</span>
+      </div>
+      <div class="nav-item" data-view="events">
+        <span>Event Calendar</span>
+        <span class="nav-badge">14</span>
+      </div>
+      <div class="nav-item" data-view="renewal">
+        <span>Renewal Pipeline</span>
+        <span class="nav-badge">42</span>
+      </div>
+      <div class="nav-item" data-view="actions">
+        <span>Board Action Items</span>
+        <span class="nav-badge">18</span>
+      </div>
+      <div class="nav-item" data-view="roles">
+        <span>Role Intelligence</span>
+      </div>
+      <div class="nav-item" data-view="connectors">
+        <span>Connectors</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ===========  MAIN CONTENT  =========== -->
+  <main class="main">
+
+    <!-- ===========  VIEW 1: REGIONAL DASHBOARD (Ronnie)  =========== -->
+    <section class="view active" data-view-id="regional">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Regional Operator · US Central</div>
+          <h1 class="page-title">Good morning, Ronnie.</h1>
+          <p class="page-desc">Fourteen chapters reporting. Eighty-nine members are flagged at-risk this week — twelve in critical tier. Three chapters are entering renewal season with open intent-survey responses below the regional average.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Export</button>
+          <button class="btn btn-primary">Weekly Brief</button>
+        </div>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Chapters Tracked</div>
+          <div class="stat-value">14</div>
+          <div class="stat-delta neutral">All sources current</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Members in Region</div>
+          <div class="stat-value">847</div>
+          <div class="stat-delta good">+12 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">At-Risk This Week</div>
+          <div class="stat-value">89</div>
+          <div class="stat-delta">▲ 7 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Critical Tier</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta">▲ 2 from last week</div>
+        </div>
+      </div>
+
+      <div class="chapters-table">
+        <div class="table-header">
+          <div>Chapter</div>
+          <div>Members</div>
+          <div>At-Risk</div>
+          <div>Critical</div>
+          <div>Risk Distribution</div>
+          <div>Renewal &lt;30d</div>
+          <div>Sync</div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Dallas</div>
+            <div class="chapter-region">US Central · HubSpot · Sheets · EO Global</div>
+          </div>
+          <div class="chapter-stat">73</div>
+          <div class="chapter-stat critical">12</div>
+          <div class="chapter-stat critical">5</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:25%"></div>
+              <div class="risk-bar-seg high" style="width:35%"></div>
+              <div class="risk-bar-seg medium" style="width:40%"></div>
+            </div>
+            <div class="risk-bar-label">5 critical · 7 high · 8 medium</div>
+          </div>
+          <div class="chapter-stat">8</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>2h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Fort Worth</div>
+            <div class="chapter-region">US Central · Go High Level · Sheets · EO Global</div>
+          </div>
+          <div class="chapter-stat">52</div>
+          <div class="chapter-stat critical">9</div>
+          <div class="chapter-stat critical">3</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:18%"></div>
+              <div class="risk-bar-seg high" style="width:32%"></div>
+              <div class="risk-bar-seg medium" style="width:50%"></div>
+            </div>
+            <div class="risk-bar-label">3 critical · 6 high · 6 medium</div>
+          </div>
+          <div class="chapter-stat">6</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>3h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Austin</div>
+            <div class="chapter-region">US Central · Pipedrive · Sheets</div>
+          </div>
+          <div class="chapter-stat">68</div>
+          <div class="chapter-stat">7</div>
+          <div class="chapter-stat">1</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:14%"></div>
+              <div class="risk-bar-seg high" style="width:28%"></div>
+              <div class="risk-bar-seg medium" style="width:58%"></div>
+            </div>
+            <div class="risk-bar-label">1 critical · 2 high · 4 medium</div>
+          </div>
+          <div class="chapter-stat muted">4</div>
+          <div><span class="sync-status"><span class="sync-dot warn"></span>14h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Houston</div>
+            <div class="chapter-region">US Central · HubSpot · ChapterPro · Sheets</div>
+          </div>
+          <div class="chapter-stat">94</div>
+          <div class="chapter-stat critical">11</div>
+          <div class="chapter-stat critical">2</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:18%"></div>
+              <div class="risk-bar-seg high" style="width:36%"></div>
+              <div class="risk-bar-seg medium" style="width:46%"></div>
+            </div>
+            <div class="risk-bar-label">2 critical · 4 high · 5 medium</div>
+          </div>
+          <div class="chapter-stat">12</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>1h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO San Antonio</div>
+            <div class="chapter-region">US Central · Bloom · Sheets</div>
+          </div>
+          <div class="chapter-stat">41</div>
+          <div class="chapter-stat">5</div>
+          <div class="chapter-stat muted">0</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg high" style="width:40%"></div>
+              <div class="risk-bar-seg medium" style="width:60%"></div>
+            </div>
+            <div class="risk-bar-label">2 high · 3 medium</div>
+          </div>
+          <div class="chapter-stat muted">3</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>5h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Oklahoma City</div>
+            <div class="chapter-region">US Central · 90io · Sheets</div>
+          </div>
+          <div class="chapter-stat">38</div>
+          <div class="chapter-stat">4</div>
+          <div class="chapter-stat muted">1</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:25%"></div>
+              <div class="risk-bar-seg high" style="width:25%"></div>
+              <div class="risk-bar-seg medium" style="width:50%"></div>
+            </div>
+            <div class="risk-bar-label">1 critical · 1 high · 2 medium</div>
+          </div>
+          <div class="chapter-stat muted">2</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>4h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO Tulsa</div>
+            <div class="chapter-region">US Central · Sheets · EO Global</div>
+          </div>
+          <div class="chapter-stat">29</div>
+          <div class="chapter-stat">3</div>
+          <div class="chapter-stat muted">0</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg high" style="width:33%"></div>
+              <div class="risk-bar-seg medium" style="width:67%"></div>
+            </div>
+            <div class="risk-bar-label">1 high · 2 medium</div>
+          </div>
+          <div class="chapter-stat muted">1</div>
+          <div><span class="sync-status"><span class="sync-dot warn"></span>22h ago</span></div>
+        </div>
+
+        <div class="chapter-row">
+          <div>
+            <div class="chapter-name">EO New Orleans</div>
+            <div class="chapter-region">US Central · HubSpot · Sheets</div>
+          </div>
+          <div class="chapter-stat">47</div>
+          <div class="chapter-stat">6</div>
+          <div class="chapter-stat muted">1</div>
+          <div>
+            <div class="risk-bar">
+              <div class="risk-bar-seg critical" style="width:17%"></div>
+              <div class="risk-bar-seg high" style="width:33%"></div>
+              <div class="risk-bar-seg medium" style="width:50%"></div>
+            </div>
+            <div class="risk-bar-label">1 critical · 2 high · 3 medium</div>
+          </div>
+          <div class="chapter-stat muted">3</div>
+          <div><span class="sync-status"><span class="sync-dot"></span>2h ago</span></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Open Board Action Items · Across All Chapters</div>
+          <div class="panel-list-item">
+            <div>
+              <div class="panel-list-name">Cheryl Gillian (Fort Worth) — confirm Q3 board offsite venue</div>
+              <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">Due 3 June · assigned by Ronnie</div>
+            </div>
+            <div class="panel-list-value">EO Fort Worth</div>
+          </div>
+          <div class="panel-list-item">
+            <div>
+              <div class="panel-list-name">Jon Minjoe (Dallas) — finalize GSEA judge panel</div>
+              <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">Due 7 June · assigned by Membership Chair</div>
+            </div>
+            <div class="panel-list-value">EO Dallas</div>
+          </div>
+          <div class="panel-list-item">
+            <div>
+              <div class="panel-list-name">Houston board — vote on Mentorship Chair candidate</div>
+              <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">Due 12 June · assigned by President</div>
+            </div>
+            <div class="panel-list-value">EO Houston</div>
+          </div>
+          <div class="panel-list-item">
+            <div>
+              <div class="panel-list-name">San Antonio — review and ratify ChapterConfig revenue verification policy</div>
+              <div style="font-size:11px;color:var(--ink-faint);margin-top:2px;">Due 15 June · assigned by Governance Chair</div>
+            </div>
+            <div class="panel-list-value">EO San Antonio</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Regional Renewal Season · Top Priorities</div>
+          <div class="panel-list-item">
+            <div class="panel-list-name">Critical · &lt;30 days · No Response</div>
+            <div class="panel-list-value">14</div>
+          </div>
+          <div class="panel-list-item">
+            <div class="panel-list-name">Critical · &lt;30 days · "Won't renew"</div>
+            <div class="panel-list-value">6</div>
+          </div>
+          <div class="panel-list-item">
+            <div class="panel-list-name">High · &lt;30 days · "Want to speak"</div>
+            <div class="panel-list-value">11</div>
+          </div>
+          <div class="panel-list-item">
+            <div class="panel-list-name">Confirmed renewed (May)</div>
+            <div class="panel-list-value">38</div>
+          </div>
+          <div class="panel-list-item">
+            <div class="panel-list-name">Avg. response rate (intent survey)</div>
+            <div class="panel-list-value">71%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 2: CHAPTER DASHBOARD (Dallas)  =========== -->
+    <section class="view" data-view-id="chapter-dallas">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Chapter Overview</div>
+          <div class="chapter-shell-header">
+            <h1 class="chapter-shell-title">EO Dallas</h1>
+            <span class="connector-badge"><span class="dot"></span>HubSpot</span>
+            <span class="connector-badge"><span class="dot"></span>Google Sheets</span>
+            <span class="connector-badge"><span class="dot"></span>EO Global</span>
+            <span class="connector-badge warn"><span class="dot"></span>WhatsApp (manual)</span>
+          </div>
+          <p class="page-desc">73 active members · Jon Minjoe, Executive Director · ChapterConfig: BoardVote approval, Annual CPA verification, Spouse program active.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Settings</button>
+          <button class="btn btn-primary">View as Board Member</button>
+        </div>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Active Members</div>
+          <div class="stat-value">73</div>
+          <div class="stat-delta good">+2 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">At-Risk This Week</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta">▲ 3 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Renewal &lt; 30 Days</div>
+          <div class="stat-value">8</div>
+          <div class="stat-delta good">2 confirmed renewed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Open Action Items</div>
+          <div class="stat-value">18</div>
+          <div class="stat-delta">3 stale (past due 14+d)</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Engagement Signal Coverage · This Chapter</div>
+          <div class="panel-list-item"><div class="panel-list-name">Forum participation</div><div class="panel-list-value">100%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Event attendance</div><div class="panel-list-value">100%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">SLP engagement status</div><div class="panel-list-value">94%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Spouse program attendance</div><div class="panel-list-value">87%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">WhatsApp activity (manual)</div><div class="panel-list-value">68%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">SAP interactions</div><div class="panel-list-value">79%</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Renewal intent response</div><div class="panel-list-value">74%</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Board Roster · Click a Role for Tailored View</div>
+          <div class="panel-list-item"><div class="panel-list-name">President</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Robert Lim</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Executive Director</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Jon Minjoe</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Membership Chair</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Imran Karim</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Forum Officer</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Prince Ananda</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">GSEA Chair</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Anita Reyes</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Governance Chair</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Joel Whitmer</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Mentorship Chair</div><div class="panel-list-value" style="font-weight:500;color:var(--ink-muted);">Rob Castillo</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 3: AT-RISK THIS WEEK (board member demo)  =========== -->
+    <section class="view" data-view-id="at-risk">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">EO Dallas · This Week's Brief</div>
+          <h1 class="page-title">Five members need a conversation</h1>
+          <p class="page-desc">Engagement scores updated overnight. Viewing as: <strong style="color:var(--navy);">Imran Karim, Membership Chair</strong>. Three critical, one high-risk renewal in the next 30 days, one promising re-engagement opportunity.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Change Role</button>
+          <button class="btn btn-primary">Send to WhatsApp</button>
+        </div>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">At-Risk This Week</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta">▲ 3 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Critical Tier</div>
+          <div class="stat-value">5</div>
+          <div class="stat-delta">▲ 1 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Renewal &lt; 30 Days</div>
+          <div class="stat-value">8</div>
+          <div class="stat-delta good">2 confirmed renewed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Intent Survey Response</div>
+          <div class="stat-value">42<span class="stat-of">/57</span></div>
+          <div class="stat-delta good">74% response rate</div>
+        </div>
+      </div>
+
+      <div class="members-list">
+
+        <div class="member-card">
+          <div>
+            <div class="member-name">Michael de Koning</div>
+            <div class="member-meta">Member since 2025 · Renewal: 14 June 2026</div>
+            <span class="tier-badge critical">Critical</span>
+            <div class="score">32<span class="score-of">/100</span></div>
+          </div>
+          <div>
+            <div class="signals-label">Why we're flagging</div>
+            <div class="signal">No forum attendance in 90 days</div>
+            <div class="signal">Spouse program invitations declined 3× in a row</div>
+            <div class="signal">WhatsApp activity dropped to None this month</div>
+            <div class="signal">SAP engagement: zero interactions in 6 months</div>
+            <div class="signal">Intent survey: <em>"Want to speak to someone"</em></div>
+          </div>
+          <div>
+            <div class="action-label">Suggested Action</div>
+            <div class="action-text">Call Michael directly this week.</div>
+            <div class="action-reason">You sponsored him in 2025 — the call should come from you, not the ED. Ask open-ended about Q1 business pressure; he hasn't raised it but the timing of the disengagement suggests something changed in March.</div>
+            <div class="action-buttons">
+              <a class="btn btn-primary" data-view="member-detail">Open Profile</a>
+              <a class="btn btn-outline">Snooze</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-card">
+          <div>
+            <div class="member-name">Sarah Chen</div>
+            <div class="member-meta">Member since 2023 · Renewal: 22 June 2026</div>
+            <span class="tier-badge critical">Critical</span>
+            <div class="score">38<span class="score-of">/100</span></div>
+          </div>
+          <div>
+            <div class="signals-label">Why we're flagging</div>
+            <div class="signal">Skipped last 3 chapter events</div>
+            <div class="signal">SAP engagement: 0 interactions in 6 months</div>
+            <div class="signal">Forum attendance dropped from 90% to 50%</div>
+            <div class="signal">Intent survey: <em>no response yet (sent 12 days ago)</em></div>
+          </div>
+          <div>
+            <div class="action-label">Suggested Action</div>
+            <div class="action-text">Send a personalised WhatsApp from David Park.</div>
+            <div class="action-reason">David is in her forum and has the closest relationship. Frame as "haven't seen you in a while, want to catch up before forum next week" — not a renewal pitch. Goal is to get her in the room.</div>
+            <div class="action-buttons">
+              <a class="btn btn-primary">Draft Message</a>
+              <a class="btn btn-outline">Assign to David</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-card">
+          <div>
+            <div class="member-name">David Park</div>
+            <div class="member-meta">Member since 2021 · Renewal: 8 July 2026</div>
+            <span class="tier-badge high">High</span>
+            <div class="score">54<span class="score-of">/100</span></div>
+          </div>
+          <div>
+            <div class="signals-label">Why we're flagging</div>
+            <div class="signal">Forum attendance steady (75%) but local event attendance fell</div>
+            <div class="signal">Declined the last two SAP events</div>
+            <div class="signal">Open board action item: assigned by you 47 days ago</div>
+          </div>
+          <div>
+            <div class="action-label">Suggested Action</div>
+            <div class="action-text">Resolve the open action item first.</div>
+            <div class="action-reason">David is a steady member but you owe him a response on the forum-chair vote question. Close the loop, then frame the renewal conversation in the same exchange.</div>
+            <div class="action-buttons">
+              <a class="btn btn-primary" data-view="actions">Open Action Item</a>
+              <a class="btn btn-outline">Skip</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-card">
+          <div>
+            <div class="member-name">Priya Anand</div>
+            <div class="member-meta">Member since 2022 · Renewal: 19 July 2026</div>
+            <span class="tier-badge high">High</span>
+            <div class="score">58<span class="score-of">/100</span></div>
+          </div>
+          <div>
+            <div class="signals-label">Why we're flagging</div>
+            <div class="signal">Mentor relationship inactive — no logged meeting in 4 months</div>
+            <div class="signal">Forum attendance dropped 75% → 50%</div>
+            <div class="signal">SLP engagement: Active (offset)</div>
+            <div class="signal">Intent survey: <em>"Plan to renew"</em></div>
+          </div>
+          <div>
+            <div class="action-label">Suggested Action</div>
+            <div class="action-text">Flag to Rob Castillo (Mentorship Chair).</div>
+            <div class="action-reason">Priya said she'll renew, but the inactive mentor pairing is the lead indicator she stops engaging post-renewal. Re-pair her with a more active mentor before July.</div>
+            <div class="action-buttons">
+              <a class="btn btn-primary">Assign to Rob</a>
+              <a class="btn btn-outline">Skip</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="member-card">
+          <div>
+            <div class="member-name">Marcus Walsh</div>
+            <div class="member-meta">Accelerator graduate · Member since 2024 · Renewal: 3 August 2026</div>
+            <span class="tier-badge medium">Re-engagement</span>
+            <div class="score">62<span class="score-of">/100</span></div>
+          </div>
+          <div>
+            <div class="signals-label">Why we're surfacing</div>
+            <div class="signal">First-ever forum attendance recorded last week</div>
+            <div class="signal">Two new SAP interactions this month</div>
+            <div class="signal">No board outreach to him in 90 days</div>
+          </div>
+          <div>
+            <div class="action-label">Suggested Action</div>
+            <div class="action-text">Light touch · congratulate on forum attendance.</div>
+            <div class="action-reason">Marcus is recovering from a slow first year (Accelerator transition). A short personal message acknowledging his forum return cements the engagement before any renewal conversation. Not at-risk anymore — but worth one warm note.</div>
+            <div class="action-buttons">
+              <a class="btn btn-primary">Send Note</a>
+              <a class="btn btn-outline">Mark Done</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 4: MEMBER DETAIL  =========== -->
+    <section class="view" data-view-id="member-detail">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Member Profile · EO Dallas</div>
+          <h1 class="page-title">Michael de Koning</h1>
+          <p class="page-desc">The founding case study — Imran's sponsor relationship, currently not renewing after &lt;1 year. Exit conversation scheduled. This is the exact scenario Trifecta is designed to prevent.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Log Note</button>
+          <button class="btn btn-primary">Log Outreach</button>
+        </div>
+      </header>
+
+      <div class="detail-grid">
+        <aside class="detail-profile">
+          <div class="profile-photo">MdK</div>
+          <div class="detail-name">Michael de Koning</div>
+          <div class="detail-company">Founder & CEO · Atlas Capital Holdings</div>
+          <span class="tier-badge critical">Critical Tier</span>
+          <div class="score" style="margin-top:18px;">32<span class="score-of">/100</span></div>
+
+          <div class="profile-meta">
+            <div class="profile-meta-label">Tenure</div>
+            <div class="profile-meta-value">11 months · joined Jul 2025</div>
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-label">Sponsor</div>
+            <div class="profile-meta-value">Imran Karim</div>
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-label">Forum</div>
+            <div class="profile-meta-value">Forum Magnolia (Member)</div>
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-label">Renewal Date</div>
+            <div class="profile-meta-value" style="color:var(--copper);">14 June 2026 · 19 days</div>
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-label">Intent Survey Response</div>
+            <div class="profile-meta-value">Want to speak — submitted 12 May</div>
+          </div>
+          <div class="profile-meta">
+            <div class="profile-meta-label">External IDs</div>
+            <div class="profile-meta-value" style="font-family:'JetBrains Mono',monospace;font-size:11px;">HubSpot · 482-991<br>EO Global · MdK-DAL-25</div>
+          </div>
+        </aside>
+
+        <div class="detail-main">
+
+          <div class="detail-section">
+            <div class="detail-section-label">Engagement Signals · Trend</div>
+            <div class="signal-row">
+              <div class="signal-name">Forum attendance (12 mo.)</div>
+              <div class="signal-value">17%</div>
+              <div class="signal-trend down">▼ 50pts</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">Local event attendance</div>
+              <div class="signal-value">22%</div>
+              <div class="signal-trend down">▼ 38pts</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">SLP engagement status</div>
+              <div class="signal-value">None</div>
+              <div class="signal-trend down">Was Occasional</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">Spouse program attendance</div>
+              <div class="signal-value">0 / 4 invited</div>
+              <div class="signal-trend down">Declined 3× consecutive</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">WhatsApp activity</div>
+              <div class="signal-value">None</div>
+              <div class="signal-trend down">Was Medium</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">SAP interactions (12 mo.)</div>
+              <div class="signal-value">0</div>
+              <div class="signal-trend down">▼ from 3</div>
+            </div>
+            <div class="signal-row">
+              <div class="signal-name">Days since last engagement</div>
+              <div class="signal-value">87</div>
+              <div class="signal-trend down">Critical threshold</div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-label">Suggested Action · LLM-Generated</div>
+            <div class="action-text">Call Michael directly this week.</div>
+            <div class="action-reason">You sponsored him in July 2025 — the call should come from you, not the ED. Open-ended question about Q1 business pressure; he hasn't raised it but the timing of the disengagement (March) suggests something changed. He answered "Want to speak" on the intent survey two weeks ago and we haven't followed up. Frame the call as "I owe you a follow-up to your survey response" — not a renewal pitch.</div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-label">Outreach History</div>
+            <div class="signal-row" style="grid-template-columns: 1fr 120px 100px;">
+              <div class="signal-name">Imran · WhatsApp · "How's Q1?"</div>
+              <div class="signal-value" style="font-size:12px;font-weight:600;">14 Feb 2026</div>
+              <div class="signal-trend up">Positive</div>
+            </div>
+            <div class="signal-row" style="grid-template-columns: 1fr 120px 100px;">
+              <div class="signal-name">Jon Minjoe · Email · forum-attendance follow-up</div>
+              <div class="signal-value" style="font-size:12px;font-weight:600;">22 Mar 2026</div>
+              <div class="signal-trend flat">No Response</div>
+            </div>
+            <div class="signal-row" style="grid-template-columns: 1fr 120px 100px;">
+              <div class="signal-name">Imran · WhatsApp · check-in</div>
+              <div class="signal-value" style="font-size:12px;font-weight:600;">8 Apr 2026</div>
+              <div class="signal-trend flat">No Response</div>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <div class="detail-section-label">Linked Board Action Items</div>
+            <div class="action-item stale">
+              <div>
+                <div class="action-item-text">Imran to follow up on Michael's intent survey response</div>
+                <div class="action-item-meta">Created 13 May · Linked to this member · <strong>Stale 7d past due</strong></div>
+              </div>
+              <span class="status-pill open">Open</span>
+              <div class="action-item-assignee"><span class="mini-avatar">IK</span> Imran</div>
+              <div class="action-item-due stale">Was due 19 May</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 5: BOARD ACTION ITEMS  =========== -->
+    <section class="view" data-view-id="actions">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Persistent Memory · EO Dallas</div>
+          <h1 class="page-title">Board Action Items</h1>
+          <p class="page-desc">The institutional memory layer. Items survive board turnover — a new chair inherits the open queue. Stale items (past due 14+ days) are surfaced separately so they cannot be ignored.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Export</button>
+          <button class="btn btn-primary">+ New Action Item</button>
+        </div>
+      </header>
+
+      <div class="tabs">
+        <button class="tab active">Open <span class="count">12</span></button>
+        <button class="tab">In Progress <span class="count">4</span></button>
+        <button class="tab" style="color:var(--copper);">Stale <span class="count" style="border-color:var(--copper);color:var(--copper);">3</span></button>
+        <button class="tab">Completed <span class="count">47</span></button>
+        <button class="tab">All <span class="count">66</span></button>
+      </div>
+
+      <div class="action-items-list">
+
+        <div class="action-item stale">
+          <div>
+            <div class="action-item-text">Follow up on Michael de Koning's intent survey response</div>
+            <div class="action-item-meta">Created 13 May · Linked to <strong>Michael de Koning</strong> · From Chair Check-In</div>
+          </div>
+          <span class="status-pill open">Open</span>
+          <div class="action-item-assignee"><span class="mini-avatar">IK</span> Imran K.</div>
+          <div class="action-item-due stale">Stale · was due 19 May</div>
+        </div>
+
+        <div class="action-item stale">
+          <div>
+            <div class="action-item-text">Confirm GSEA local-round venue and judge panel</div>
+            <div class="action-item-meta">Created 8 May · From Board Meeting · Cross-linked: Anita R., Jon M.</div>
+          </div>
+          <span class="status-pill progress">In Progress</span>
+          <div class="action-item-assignee"><span class="mini-avatar">AR</span> Anita R.</div>
+          <div class="action-item-due stale">Stale · was due 15 May</div>
+        </div>
+
+        <div class="action-item stale">
+          <div>
+            <div class="action-item-text">Revisit ChapterConfig engagement-weight tuning post-Q1</div>
+            <div class="action-item-meta">Created 28 April · From Governance review · Linked: Joel W.</div>
+          </div>
+          <span class="status-pill open">Open</span>
+          <div class="action-item-assignee"><span class="mini-avatar">JW</span> Joel W.</div>
+          <div class="action-item-due stale">Stale · was due 5 May</div>
+        </div>
+
+        <div class="action-item">
+          <div>
+            <div class="action-item-text">Schedule Q3 board offsite — venue + agenda</div>
+            <div class="action-item-meta">Created 19 May · From Board Meeting</div>
+          </div>
+          <span class="status-pill open">Open</span>
+          <div class="action-item-assignee"><span class="mini-avatar">RL</span> Robert L.</div>
+          <div class="action-item-due">Due 3 June</div>
+        </div>
+
+        <div class="action-item">
+          <div>
+            <div class="action-item-text">Re-pair Priya Anand with an active mentor</div>
+            <div class="action-item-meta">Created 26 May · Linked to <strong>Priya Anand</strong> · From At-Risk digest</div>
+          </div>
+          <span class="status-pill open">Open</span>
+          <div class="action-item-assignee"><span class="mini-avatar">RC</span> Rob C.</div>
+          <div class="action-item-due">Due 12 June</div>
+        </div>
+
+        <div class="action-item">
+          <div>
+            <div class="action-item-text">Review SAP partner roster and confirm Q3 calendar</div>
+            <div class="action-item-meta">Created 21 May · From Board Meeting</div>
+          </div>
+          <span class="status-pill progress">In Progress</span>
+          <div class="action-item-assignee"><span class="mini-avatar">SK</span> Sasha K.</div>
+          <div class="action-item-due">Due 14 June</div>
+        </div>
+
+        <div class="action-item">
+          <div>
+            <div class="action-item-text">Draft Mentorship Chair onboarding doc for incoming chair</div>
+            <div class="action-item-meta">Created 24 May · Linked to <strong>Rob Castillo</strong> · From One-on-One</div>
+          </div>
+          <span class="status-pill open">Open</span>
+          <div class="action-item-assignee"><span class="mini-avatar">RC</span> Rob C.</div>
+          <div class="action-item-due">Due 20 June</div>
+        </div>
+
+        <div class="action-item">
+          <div>
+            <div class="action-item-text">Coordinate with Joel Whitmer on HubSpot custom-field for renewal_intent_response</div>
+            <div class="action-item-meta">Created 22 May · From Connector setup</div>
+          </div>
+          <span class="status-pill progress">In Progress</span>
+          <div class="action-item-assignee"><span class="mini-avatar">IK</span> Imran K.</div>
+          <div class="action-item-due">Due 30 May</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 6: CONNECTORS  =========== -->
+    <section class="view" data-view-id="connectors">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Per-Chapter Configuration</div>
+          <h1 class="page-title">Connectors</h1>
+          <p class="page-desc">Trifecta absorbs from whichever systems each chapter uses. Dallas runs HubSpot; Fort Worth runs Go High Level. Every connector implements the same DataSource interface — switching between them is configuration, not a rebuild.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Test Sync</button>
+          <button class="btn btn-primary">+ Add Connector</button>
+        </div>
+      </header>
+
+      <div class="connectors-grid">
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">HubSpot</div>
+              <div class="connector-chapter">EO Dallas · Primary CRM</div>
+            </div>
+            <span class="connector-status">Live</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Last sync</span><span>2h ago</span></div>
+            <div class="connector-row"><span>Sync frequency</span><span>Every 4 hours</span></div>
+            <div class="connector-row"><span>Records imported</span><span>73 members</span></div>
+            <div class="connector-row"><span>Custom property</span><span>renewal_intent_response ✓</span></div>
+            <div class="connector-row"><span>Write-back mode</span><span>Phase 2 (pending)</span></div>
+            <div class="connector-row"><span>External ID key</span><span>external_ids.hubspot</span></div>
+          </div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">Go High Level</div>
+              <div class="connector-chapter">EO Fort Worth · Primary CRM</div>
+            </div>
+            <span class="connector-status">Live</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Last sync</span><span>3h ago</span></div>
+            <div class="connector-row"><span>Sync frequency</span><span>Every 4 hours</span></div>
+            <div class="connector-row"><span>Records imported</span><span>52 members</span></div>
+            <div class="connector-row"><span>Custom field</span><span>renewal_intent_response ✓</span></div>
+            <div class="connector-row"><span>Webhook</span><span>Active · /api/v1/ghl/renewal-intent</span></div>
+            <div class="connector-row"><span>External ID key</span><span>external_ids.gohighlevel</span></div>
+          </div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">Google Sheets</div>
+              <div class="connector-chapter">All Chapters · Forum + Attendance</div>
+            </div>
+            <span class="connector-status">Live</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Last sync</span><span>5h ago</span></div>
+            <div class="connector-row"><span>Sync frequency</span><span>Every 6 hours</span></div>
+            <div class="connector-row"><span>Sheets connected</span><span>4 (across 2 chapters)</span></div>
+            <div class="connector-row"><span>Column mapping</span><span>Per chapter (configurable)</span></div>
+            <div class="connector-row"><span>Auth</span><span>OAuth 2.0 · tokens encrypted</span></div>
+          </div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">EO Global API</div>
+              <div class="connector-chapter">Member directory · Event history</div>
+            </div>
+            <span class="connector-status pending">Pending Access</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Connector skeleton</span><span>Built · awaiting credentials</span></div>
+            <div class="connector-row"><span>Join key</span><span>eo_global_member_id</span></div>
+            <div class="connector-row"><span>Fallback</span><span>Email match</span></div>
+            <div class="connector-row"><span>Expected signals</span><span>Global events · renewals · chapter transfers</span></div>
+          </div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">WhatsApp</div>
+              <div class="connector-chapter">All Chapters · Phase 1: Manual</div>
+            </div>
+            <span class="connector-status pending">Phase 1 Manual</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Mode</span><span>Admin sets activity level per member</span></div>
+            <div class="connector-row"><span>Coverage</span><span>68% of members</span></div>
+            <div class="connector-row"><span>Phase 3 plan</span><span>WhatsApp Business API via BSP</span></div>
+            <div class="connector-row"><span>Urgent alerts</span><span>Email fallback active</span></div>
+          </div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div>
+              <div class="connector-name">Future Stubs</div>
+              <div class="connector-chapter">Roadmap · §5.6</div>
+            </div>
+            <span class="connector-status pending">Inactive</span>
+          </div>
+          <div class="connector-rows">
+            <div class="connector-row"><span>Pipedrive</span><span>Stub registered</span></div>
+            <div class="connector-row"><span>Bloom</span><span>Stub registered</span></div>
+            <div class="connector-row"><span>90io</span><span>Stub registered</span></div>
+            <div class="connector-row"><span>EO Global Board Tracker</span><span>Stub registered</span></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 7: ROLE INTELLIGENCE  =========== -->
+    <section class="view" data-view-id="roles">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">LLM-Tailored Intelligence per Board Seat</div>
+          <h1 class="page-title">Role Intelligence Profiles</h1>
+          <p class="page-desc">Sixteen catalog roles, each with a tailored digest. The Mentorship Chair sees different signals than the Governance Chair, and both see different intelligence than the Membership Chair. Custom chapter roles get generic output until mapped to a catalog entry.</p>
+        </div>
+      </header>
+
+      <div class="role-grid">
+        <div class="role-chip"><div>President</div><div class="role-chip-tag">Strategy · oversight</div></div>
+        <div class="role-chip"><div>President-Elect</div><div class="role-chip-tag">Succession · shadow</div></div>
+        <div class="role-chip"><div>Past President</div><div class="role-chip-tag">Advisory</div></div>
+        <div class="role-chip"><div>Treasurer / VP Finance</div><div class="role-chip-tag">Dues · vendor mgmt</div></div>
+        <div class="role-chip active"><div>Membership Chair</div><div class="role-chip-tag">Recruitment · retention</div></div>
+        <div class="role-chip"><div>Forum Officer</div><div class="role-chip-tag">Forum assignments · health</div></div>
+        <div class="role-chip"><div>Events Chair</div><div class="role-chip-tag">Local events · social</div></div>
+        <div class="role-chip"><div>Learning Chair</div><div class="role-chip-tag">Education · speakers</div></div>
+        <div class="role-chip"><div>Communications Chair</div><div class="role-chip-tag">Chapter comms · social</div></div>
+        <div class="role-chip"><div>SAP Chair</div><div class="role-chip-tag">Strategic alliances</div></div>
+        <div class="role-chip"><div>GSEA Chair</div><div class="role-chip-tag">Student entrepreneur awards</div></div>
+        <div class="role-chip"><div>Governance Chair</div><div class="role-chip-tag">Bylaws · board ops</div></div>
+        <div class="role-chip"><div>Accelerator Chair</div><div class="role-chip-tag">EOA bridge to full member</div></div>
+        <div class="role-chip"><div>Mentorship Chair</div><div class="role-chip-tag">Mentor pairing · onboarding</div></div>
+        <div class="role-chip"><div>SLP Chair</div><div class="role-chip-tag">Spouse / Life Partner</div></div>
+        <div class="role-chip"><div>Executive Director</div><div class="role-chip-tag">Operations · paid staff</div></div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Active Role · Membership Chair · Signal Priority</div>
+          <div class="panel-list-item"><div class="panel-list-name">Renewal intent response</div><div class="panel-list-value">Weight ×3.0</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Forum attendance rate (12 mo.)</div><div class="panel-list-value">Weight ×2.5</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Days since last engagement</div><div class="panel-list-value">Weight ×2.0</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Sponsor relationship</div><div class="panel-list-value">Weight ×1.8</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">SLP / Spouse program</div><div class="panel-list-value">Weight ×1.5</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">SAP interactions</div><div class="panel-list-value">Weight ×1.2</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Sample · Mentorship Chair · Different View</div>
+          <div class="panel-list-item"><div class="panel-list-name">Mentor-meeting cadence</div><div class="panel-list-value">Weight ×3.0</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Onboarding-completion %</div><div class="panel-list-value">Weight ×2.8</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">First-12-month engagement trajectory</div><div class="panel-list-value">Weight ×2.5</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Mentor satisfaction signal</div><div class="panel-list-value">Weight ×1.8</div></div>
+          <div class="panel-list-item"><div class="panel-list-name">Re-pairing flags</div><div class="panel-list-value">Weight ×1.5</div></div>
+          <div class="panel-list-item" style="color:var(--ink-faint);"><div class="panel-list-name">Renewal intent response</div><div class="panel-list-value">Weight ×0.8</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 8: RENEWAL PIPELINE  =========== -->
+    <section class="view" data-view-id="renewal">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">April Intent Survey + Health Score</div>
+          <h1 class="page-title">Renewal Pipeline · 2026 Season</h1>
+          <p class="page-desc">Combines the April Renewal Intent Survey with the year-round Health Score. A member scoring 78 who responded "Won't renew" outranks a member scoring 35 who said "Plan to renew." Survey re-ranks the pipeline; it does not replace the score.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Export Call List</button>
+          <button class="btn btn-primary">Send Reminder Wave</button>
+        </div>
+      </header>
+
+      <div class="renewal-summary">
+        <div class="renewal-tile">
+          <div class="renewal-tile-label">Plan to Renew</div>
+          <div class="renewal-tile-value">28</div>
+          <div class="renewal-tile-pct">49% of responders</div>
+        </div>
+        <div class="renewal-tile">
+          <div class="renewal-tile-label">Want to Speak</div>
+          <div class="renewal-tile-value">11</div>
+          <div class="renewal-tile-pct">19% — high priority</div>
+        </div>
+        <div class="renewal-tile critical">
+          <div class="renewal-tile-label">Won't Renew</div>
+          <div class="renewal-tile-value">3</div>
+          <div class="renewal-tile-pct">5% — last-attempt window</div>
+        </div>
+        <div class="renewal-tile">
+          <div class="renewal-tile-label">No Response (12+ days)</div>
+          <div class="renewal-tile-value">15</div>
+          <div class="renewal-tile-pct">26% — follow-up wave</div>
+        </div>
+      </div>
+
+      <div class="placeholder-note">
+        Renewal Priority Score ranking, full member list with intent + score view, and post-season analysis (§11.6) — UI continues here. Full board member portal experience.
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 8b: EVENT CALENDAR  =========== -->
+    <section class="view" data-view-id="events">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">EO Dallas · Auto-Invite Engine</div>
+          <h1 class="page-title">Event Calendar</h1>
+          <p class="page-desc">Every chapter event automatically generates calendar invites for the right members — and only the right members. New members get invited to all applicable upcoming events the moment they join. Lapsed members have future invites revoked the day they go inactive. Trifecta is the chapter's calendar source of truth.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Eligibility Rules</button>
+          <button class="btn btn-primary">+ New Event</button>
+        </div>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Invitations Sent This Month</div>
+          <div class="stat-value">418</div>
+          <div class="stat-delta neutral">14 events · 73 members</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Acceptance Rate</div>
+          <div class="stat-value">68<span class="stat-of">%</span></div>
+          <div class="stat-delta good">+4 pts vs. April</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">No-Shows After Accept</div>
+          <div class="stat-value">7</div>
+          <div class="stat-delta">▲ 2 — feeds churn risk</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Opt-Outs Respected</div>
+          <div class="stat-value">23</div>
+          <div class="stat-delta neutral">Across all members</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-title">Upcoming Events · Next 60 Days</div>
+          <div class="event-list" style="margin-top:8px;">
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">May</div>
+                <div class="event-date-day">28</div>
+                <div class="event-date-time">6:30 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge forum">Forum</span>
+                <div class="event-title">Forum Magnolia · Monthly Meeting</div>
+                <div class="event-meta">Recurring · 2nd Tuesday · Forum members only · Private venue</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 8 · Accepted</div>
+                <div class="event-invite-counts"><strong>7</strong> / 8</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">May</div>
+                <div class="event-date-day">30</div>
+                <div class="event-date-time">7:00 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge social">Social · Spouse-inclusive</span>
+                <div class="event-title">Spring Wine Tasting at Trinity Vineyard</div>
+                <div class="event-meta">All active members + spouses · 132 invites dispatched (73 members + 59 spouses)</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 132 · Accepted</div>
+                <div class="event-invite-counts"><strong>89</strong> / 132</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Jun</div>
+                <div class="event-date-day">03</div>
+                <div class="event-date-time">5:00 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge gsea">GSEA</span>
+                <div class="event-title">GSEA Dallas Local Round · Pitches + Judging</div>
+                <div class="event-meta">GSEA Chair · GSEA committee · Members opted in to GSEA mentorship · 18 invites</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 18 · Accepted</div>
+                <div class="event-invite-counts"><strong>14</strong> / 18 · <em>1 declined</em></div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Jun</div>
+                <div class="event-date-day">08</div>
+                <div class="event-date-time">8:00 AM</div>
+              </div>
+              <div>
+                <span class="event-type-badge board">Board Meeting</span>
+                <div class="event-title">June Board Meeting</div>
+                <div class="event-meta">Recurring · Monthly · Board members only · 12 invited</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 12 · Accepted</div>
+                <div class="event-invite-counts"><strong>11</strong> / 12</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Jun</div>
+                <div class="event-date-day">14</div>
+                <div class="event-date-time">12:00 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge sap">SAP</span>
+                <div class="event-title">Strategic Alliance Partner Lunch · Q2 Recap</div>
+                <div class="event-meta">Members opted into SAP partner engagement · 24 invited</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 24 · Accepted</div>
+                <div class="event-invite-counts"><strong>16</strong> / 24 · <em>2 declined</em></div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Jun</div>
+                <div class="event-date-day">22</div>
+                <div class="event-date-time">10:00 AM</div>
+              </div>
+              <div>
+                <span class="event-type-badge slp">SLP · Spouse-inclusive</span>
+                <div class="event-title">SLP Spring Brunch</div>
+                <div class="event-meta">All active members + spouses · 124 invites (members 73 + spouses 51 where slp_email present)</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 124 · Accepted</div>
+                <div class="event-invite-counts"><strong>71</strong> / 124</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Jul</div>
+                <div class="event-date-day">08</div>
+                <div class="event-date-time">6:00 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge learning">Learning</span>
+                <div class="event-title">AI for CEOs · Speaker: Dr. Anjali Mehra</div>
+                <div class="event-meta">All active members · 73 invited · Hybrid (in-person + Zoom)</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 73 · Accepted</div>
+                <div class="event-invite-counts"><strong>52</strong> / 73 · <em>3 declined</em></div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Aug</div>
+                <div class="event-date-day">12</div>
+                <div class="event-date-time">5:30 PM</div>
+              </div>
+              <div>
+                <span class="event-type-badge eoa">EOA</span>
+                <div class="event-title">EOA Cohort 2026 · Demo Day</div>
+                <div class="event-meta">EOA-track members only · 8 invited · Accelerator Chair + EOA cohort</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 8 · Accepted</div>
+                <div class="event-invite-counts"><strong>6</strong> / 8</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+            <div class="event-card">
+              <div class="event-date">
+                <div class="event-date-month">Sep</div>
+                <div class="event-date-day">05</div>
+                <div class="event-date-time">All Day</div>
+              </div>
+              <div>
+                <span class="event-type-badge regional">Regional</span>
+                <div class="event-title">US Central Summit 2026 · Dallas Host</div>
+                <div class="event-meta">Cross-chapter · 14 chapters in US Central · 847 invited (the full region)</div>
+              </div>
+              <div class="event-invite-stats">
+                <div class="event-invite-line">Invited 847 · Accepted</div>
+                <div class="event-invite-counts"><strong>312</strong> / 847</div>
+              </div>
+              <button class="btn btn-outline">Manage</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Auto-Invite Engine · Recent Activity</div>
+          <div class="auto-invite-feed">
+
+            <div class="feed-item">
+              <div class="feed-icon new">+M</div>
+              <div class="feed-text">
+                <div><strong>Marcus Walsh</strong> joined the chapter — 11 future event invites auto-dispatched (Learning ×3, Social ×2, Chapter ×4, GSEA ×1, SAP ×1).</div>
+                <div class="feed-time">2 hours ago · triggered by new member</div>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon lapsed">−J</div>
+              <div class="feed-text">
+                <div><strong>Janet Reilly</strong> status changed to Lapsed — 6 future invites revoked, iCal CANCEL dispatched.</div>
+                <div class="feed-time">Yesterday · triggered by membership_status change</div>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon">+E</div>
+              <div class="feed-text">
+                <div>New event scheduled: <strong>SAP Partner Lunch · Q3 Preview</strong> (15 Sep) — 26 invites dispatched per SAP eligibility rule.</div>
+                <div class="feed-time">22 May · created by Sasha K. (SAP Chair)</div>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon cancel">↺R</div>
+              <div class="feed-text">
+                <div><strong>Forum Magnolia · May 21</strong> rescheduled to May 28 — 8 iCal UPDATE messages dispatched, no re-confirmation required.</div>
+                <div class="feed-time">19 May · triggered by event datetime change</div>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon lapsed">!N</div>
+              <div class="feed-text">
+                <div><strong>3 no-show signals</strong> recorded from Spring Wine Tasting — fed into engagement scores for affected members.</div>
+                <div class="feed-time">14 May · 24h post-event attendance check</div>
+              </div>
+            </div>
+
+            <div class="feed-item">
+              <div class="feed-icon">−O</div>
+              <div class="feed-text">
+                <div><strong>David Park</strong> opted out of SAP event invites — future SAP invitations will skip his calendar; existing accepted SAP invites unaffected.</div>
+                <div class="feed-time">12 May · member self-service</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:28px;">
+        <div class="panel-title">Event Type Catalog · Default Eligibility Per Type</div>
+        <div class="event-types-grid" style="margin-top:10px;">
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Learning</div>
+            <div class="event-type-tile-rule">All active members</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Social</div>
+            <div class="event-type-tile-rule">All active + spouse</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Chapter Event</div>
+            <div class="event-type-tile-rule">All active members</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Board Meeting</div>
+            <div class="event-type-tile-rule">Board roles only</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Forum Meeting</div>
+            <div class="event-type-tile-rule">Forum members (scoped)</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">GSEA</div>
+            <div class="event-type-tile-rule">GSEA Chair + committee + opted-in</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">SAP</div>
+            <div class="event-type-tile-rule">SAP-opted-in members</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">SLP</div>
+            <div class="event-type-tile-rule">All active + spouse if slp_email</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">EOA</div>
+            <div class="event-type-tile-rule">EOA-track members only</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Regional</div>
+            <div class="event-type-tile-rule">Same-region chapters</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Global</div>
+            <div class="event-type-tile-rule">Per Global registration</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Committee</div>
+            <div class="event-type-tile-rule">Committee members only</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Mentor Session</div>
+            <div class="event-type-tile-rule">Mentor + mentee pair</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Renewal Convo</div>
+            <div class="event-type-tile-rule">Trifecta-scheduled 1:1</div>
+          </div>
+          <div class="event-type-tile">
+            <div class="event-type-tile-name">Custom</div>
+            <div class="event-type-tile-rule">Chapter-defined</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 9: FORT WORTH (mirror of Dallas)  =========== -->
+    <section class="view" data-view-id="chapter-fortworth">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Chapter Overview</div>
+          <div class="chapter-shell-header">
+            <h1 class="chapter-shell-title">EO Fort Worth</h1>
+            <span class="connector-badge"><span class="dot"></span>Go High Level</span>
+            <span class="connector-badge"><span class="dot"></span>Google Sheets</span>
+            <span class="connector-badge"><span class="dot"></span>EO Global</span>
+          </div>
+          <p class="page-desc">52 active members · Cheryl Gillian, Member Engagement Chair · ChapterConfig: ED Approval workflow, Trust-based revenue verification, Spouse program active. Migrated from Pipedrive → HubSpot → Go High Level over 3 years; Trifecta is the persistent layer that survived each switch.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-outline">Settings</button>
+          <button class="btn btn-primary">View as Engagement Chair</button>
+        </div>
+      </header>
+
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-label">Active Members</div>
+          <div class="stat-value">52</div>
+          <div class="stat-delta good">+1 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">At-Risk This Week</div>
+          <div class="stat-value">9</div>
+          <div class="stat-delta">▲ 2 from last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Renewal &lt; 30 Days</div>
+          <div class="stat-value">6</div>
+          <div class="stat-delta good">3 confirmed renewed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Open Action Items</div>
+          <div class="stat-value">11</div>
+          <div class="stat-delta">1 stale</div>
+        </div>
+      </div>
+
+      <div class="placeholder-note">
+        Fort Worth chapter dashboard mirrors Dallas — same intelligence layer, different CRM underneath (Go High Level). This is the architectural proof point: the at-risk view, member detail, action items, and renewal pipeline are identical regardless of which CRM the chapter uses.
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 10: ALL CHAPTERS (placeholder)  =========== -->
+    <section class="view" data-view-id="chapters-all">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Regional Operator</div>
+          <h1 class="page-title">All Chapters</h1>
+          <p class="page-desc">Detailed roster of every chapter Ronnie has access to, with filters, comparative view, and bulk operations.</p>
+        </div>
+      </header>
+      <div class="placeholder-note">
+        Expanded chapter list with sort/filter (by region, by at-risk count, by renewal urgency), chapter comparison overlays, and bulk export. UI continues from the Regional Dashboard table.
+      </div>
+    </section>
+
+    <!-- ===========  VIEW 11: ANALYTICS (placeholder)  =========== -->
+    <section class="view" data-view-id="analytics">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Phase 2 · Coming Q3 2026</div>
+          <h1 class="page-title">Cross-Chapter Analytics</h1>
+          <p class="page-desc">Engagement score distributions across the user's chapter set. Renewal rate comparison. Identify patterns that travel across chapters: e.g. SAP engagement correlates with renewal everywhere; forum participation correlates only in some.</p>
+        </div>
+      </header>
+      <div class="placeholder-note">
+        Cross-chapter analytics (§2.9, §6 Phase 2). Reserved for the Phase 2 build. Will include benchmarking, anonymised cross-chapter comparisons, and pattern detection.
+      </div>
+    </section>
+
+    <!-- ===========  PLACEHOLDER  =========== -->
+    <section class="view" data-view-id="placeholder">
+      <header class="page-header">
+        <div>
+          <div class="page-eyebrow">Chapter View</div>
+          <h1 class="page-title">Chapter Detail</h1>
+          <p class="page-desc">Same view as Dallas and Fort Worth — chapter overview, at-risk list, member detail, renewal pipeline, board action items, connectors. Each chapter is a self-contained view within Ronnie's regional scope.</p>
+        </div>
+      </header>
+      <div class="placeholder-note">
+        Click EO Dallas or EO Fort Worth in the sidebar to see fully-populated chapter views.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Simple view switcher
+  document.querySelectorAll('[data-view]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const view = el.getAttribute('data-view');
+      if (!view) return;
+
+      // Update active nav item (only sidebar nav-items)
+      if (el.classList.contains('nav-item')) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        el.classList.add('active');
+      }
+
+      // Show the target view
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      const target = document.querySelector(`[data-view-id="${view}"]`);
+      if (target) {
+        target.classList.add('active');
+        document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
+  });
+
+  // Role chip toggle (visual only)
+  document.querySelectorAll('.role-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+    });
+  });
+
+  // Tabs (visual only)
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const parent = tab.closest('.tabs');
+      if (!parent) return;
+      parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

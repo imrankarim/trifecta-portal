@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trifecta — Design Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0F1419;
+    background: #F4F4F4;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* =========== Top Nav =========== */
+  .top-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: #0F1419; color: #fff;
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #222;
+  }
+  .top-nav h1 { font-size: 14px; font-weight: 600; letter-spacing: 0.02em; }
+  .top-nav .nav-links { display: flex; gap: 24px; }
+  .top-nav a {
+    color: #cdd2d8; text-decoration: none; font-size: 13px; font-weight: 500;
+    padding: 4px 10px; border-radius: 4px; transition: all 0.15s;
+  }
+  .top-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+  /* =========== Variant Wrapper =========== */
+  .variant {
+    min-height: 100vh;
+    padding: 60px 40px 80px;
+  }
+  .variant-header {
+    max-width: 1280px; margin: 0 auto 32px;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;
+    padding-bottom: 24px;
+  }
+  .variant-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #6b7480; margin-bottom: 6px;
+  }
+  .variant-title { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; }
+  .variant-desc { max-width: 540px; font-size: 14px; color: #5c6470; }
+  .design-notes {
+    max-width: 1280px; margin: 0 auto 36px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    padding: 16px 0; border-top: 1px solid #d5d8dc; border-bottom: 1px solid #d5d8dc;
+  }
+  .design-notes dt {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
+    letter-spacing: 0.12em; text-transform: uppercase; color: #6b7480; margin-bottom: 4px;
+  }
+  .design-notes dd { font-size: 13px; color: #2a2f37; }
+  .demo-frame {
+    max-width: 1280px; margin: 0 auto;
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.15), 0 4px 12px -4px rgba(0,0,0,0.08);
+  }
+
+  /* ============================================================ */
+  /* =====================  VARIANT A: BOARDROOM  =============== */
+  /* ============================================================ */
+  .v-boardroom { background: #ECE4D5; }
+  .a-frame {
+    background: #F8F4ED;
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: #1A1813;
+  }
+  .a-header {
+    background: #1B2A4E; color: #F8F4ED;
+    padding: 22px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .a-brand { display: flex; align-items: baseline; gap: 12px; }
+  .a-logo {
+    width: 28px; height: 28px; border: 2px solid #C2603D; border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Manrope'; font-weight: 800; font-size: 13px; color: #C2603D;
+  }
+  .a-brand-name { font-weight: 700; font-size: 17px; letter-spacing: -0.01em; }
+  .a-brand-sub { font-weight: 500; font-size: 13px; color: #B8B3A6; }
+  .a-header-meta { font-size: 13px; color: #B8B3A6; }
+  .a-header-meta strong { color: #F8F4ED; font-weight: 600; }
+
+  .a-body { padding: 40px 36px 48px; }
+  .a-section-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #C2603D; margin-bottom: 8px;
+  }
+  .a-section-title {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: #1B2A4E;
+    margin-bottom: 8px;
+  }
+  .a-section-desc { font-size: 15px; color: #5C5748; max-width: 640px; margin-bottom: 32px; }
+
+  .a-stat-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    margin-bottom: 36px;
+  }
+  .a-stat {
+    background: #FCFAF6; border: 1px solid #E8DFD0; border-radius: 6px;
+    padding: 18px 20px;
+  }
+  .a-stat-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #8C8778; margin-bottom: 6px;
+  }
+  .a-stat-value { font-size: 28px; font-weight: 800; color: #1B2A4E; letter-spacing: -0.02em; }
+  .a-stat-delta { font-size: 12px; color: #C2603D; font-weight: 600; margin-top: 4px; }
+  .a-stat-delta.good { color: #2D6A3F; }
+
+  .a-cards { display: flex; flex-direction: column; gap: 16px; }
+  .a-card {
+    background: #FCFAF6; border: 1px solid #E8DFD0; border-radius: 6px;
+    padding: 24px 28px; display: grid;
+    grid-template-columns: 1fr 1.2fr 0.9fr; gap: 28px; align-items: start;
+  }
+  .a-card-name { font-size: 19px; font-weight: 700; color: #1B2A4E; margin-bottom: 4px; }
+  .a-card-meta { font-size: 12px; color: #8C8778; margin-bottom: 14px; }
+  .a-tier {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 4px 10px; border-radius: 3px;
+  }
+  .a-tier.critical { background: #C2603D; color: #F8F4ED; }
+  .a-tier.high { background: #1B2A4E; color: #F8F4ED; }
+  .a-tier.medium { background: #E8DFD0; color: #1A1813; border: 1px solid #C7BDA8; }
+  .a-score { font-family: 'Manrope'; font-weight: 800; font-size: 36px; color: #1B2A4E; letter-spacing: -0.03em; margin-top: 12px; }
+  .a-score-of { font-size: 14px; color: #8C8778; font-weight: 500; }
+
+  .a-signals-label, .a-action-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #8C8778; margin-bottom: 10px;
+  }
+  .a-signal {
+    font-size: 13px; color: #2A2F37; padding: 4px 0;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .a-signal::before { content: '—'; color: #C2603D; font-weight: 700; }
+  .a-action-text { font-size: 14px; color: #1A1813; line-height: 1.55; margin-bottom: 12px; font-weight: 500; }
+  .a-action-reason { font-size: 12px; color: #5C5748; line-height: 1.55; font-style: italic; }
+  .a-action-btn {
+    display: inline-block; background: #1B2A4E; color: #F8F4ED;
+    padding: 9px 16px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    border-radius: 3px; text-decoration: none; margin-top: 16px;
+  }
+  .a-action-btn.alt { background: transparent; color: #1B2A4E; border: 1.5px solid #1B2A4E; margin-left: 8px; }
+
+  /* ============================================================ */
+  /* =======================  VARIANT B: STUDIO  ================= */
+  /* ============================================================ */
+  .v-studio { background: #F4F4F4; }
+  .b-frame { background: #FFFFFF; font-family: 'Inter', system-ui, sans-serif; color: #0F1419; }
+  .b-header {
+    background: #FFFFFF; border-bottom: 1px solid #E5E7EB;
+    padding: 18px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .b-brand { display: flex; align-items: center; gap: 10px; }
+  .b-logo {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 12px;
+  }
+  .b-brand-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+  .b-brand-sub { font-weight: 400; font-size: 13px; color: #6B7280; margin-left: 4px; }
+  .b-header-meta { font-size: 13px; color: #6B7280; }
+  .b-header-meta strong { color: #0F1419; font-weight: 500; }
+
+  .b-body { padding: 40px 36px 48px; }
+  .b-section-label {
+    font-size: 13px; font-weight: 500; color: #6366F1; margin-bottom: 6px;
+  }
+  .b-section-title {
+    font-size: 28px; font-weight: 600; letter-spacing: -0.025em; color: #0F1419;
+    margin-bottom: 6px;
+  }
+  .b-section-desc { font-size: 15px; color: #4B5563; max-width: 640px; margin-bottom: 32px; }
+
+  .b-stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 36px; }
+  .b-stat {
+    background: #FAFAFA; border: 1px solid #E5E7EB; border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .b-stat-label { font-size: 12px; color: #6B7280; margin-bottom: 6px; font-weight: 500; }
+  .b-stat-value { font-size: 26px; font-weight: 600; color: #0F1419; letter-spacing: -0.025em; }
+  .b-stat-delta { font-size: 12px; color: #6366F1; font-weight: 500; margin-top: 4px; }
+  .b-stat-delta.good { color: #10B981; }
+
+  .b-cards { display: flex; flex-direction: column; gap: 12px; }
+  .b-card {
+    background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px;
+    padding: 22px 24px; display: grid;
+    grid-template-columns: 1.1fr 1.2fr 1fr; gap: 28px; align-items: start;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .b-card:hover { border-color: #C7D2FE; box-shadow: 0 1px 3px rgba(99, 102, 241, 0.06); }
+  .b-card-name { font-size: 16px; font-weight: 600; color: #0F1419; margin-bottom: 2px; letter-spacing: -0.01em; }
+  .b-card-meta { font-size: 13px; color: #6B7280; margin-bottom: 14px; }
+  .b-tier {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
+  }
+  .b-tier::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+  }
+  .b-tier.critical { background: #FEE2E2; color: #991B1B; }
+  .b-tier.critical::before { background: #DC2626; }
+  .b-tier.high { background: #FEF3C7; color: #92400E; }
+  .b-tier.high::before { background: #D97706; }
+  .b-tier.medium { background: #DBEAFE; color: #1E40AF; }
+  .b-tier.medium::before { background: #2563EB; }
+  .b-score { font-weight: 600; font-size: 32px; color: #0F1419; letter-spacing: -0.03em; margin-top: 12px; }
+  .b-score-of { font-size: 13px; color: #9CA3AF; font-weight: 400; }
+
+  .b-signals-label, .b-action-label {
+    font-size: 12px; font-weight: 500; color: #6B7280; margin-bottom: 10px;
+  }
+  .b-signal {
+    font-size: 13px; color: #374151; padding: 3px 0;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .b-signal::before {
+    content: ''; flex-shrink: 0; width: 4px; height: 4px; border-radius: 50%;
+    background: #6366F1; margin-top: 8px;
+  }
+  .b-action-text { font-size: 14px; color: #0F1419; line-height: 1.55; margin-bottom: 8px; font-weight: 500; }
+  .b-action-reason { font-size: 12px; color: #6B7280; line-height: 1.5; }
+  .b-action-btn {
+    display: inline-block; background: #6366F1; color: #fff;
+    padding: 8px 14px; font-size: 13px; font-weight: 500;
+    border-radius: 8px; text-decoration: none; margin-top: 14px;
+    transition: background 0.15s;
+  }
+  .b-action-btn:hover { background: #4F46E5; }
+  .b-action-btn.alt { background: transparent; color: #6366F1; border: 1px solid #C7D2FE; margin-left: 6px; }
+
+  /* ============================================================ */
+  /* =====================  VARIANT C: HERITAGE  ================ */
+  /* ============================================================ */
+  .v-heritage { background: #DDD4BD; }
+  .c-frame { background: #F5F1E8; font-family: 'Outfit', system-ui, sans-serif; color: #1A1813; }
+  .c-header {
+    background: #F5F1E8; border-bottom: 2px solid #1A1813;
+    padding: 22px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .c-brand { display: flex; align-items: baseline; gap: 14px; }
+  .c-logo {
+    width: 30px; height: 30px; border: 2px solid #7C2128;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Outfit'; font-weight: 700; font-size: 14px; color: #7C2128;
+  }
+  .c-brand-name { font-weight: 700; font-size: 18px; letter-spacing: -0.01em; color: #1A1813; }
+  .c-brand-sub {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #5C5748; padding-left: 14px; border-left: 1px solid #D5CFC0;
+  }
+  .c-header-meta {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+    color: #5C5748;
+  }
+  .c-header-meta strong { color: #1A1813; font-weight: 700; }
+
+  .c-body { padding: 44px 36px 52px; }
+  .c-section-rule {
+    height: 1px; background: #1A1813; margin-bottom: 4px;
+  }
+  .c-section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #7C2128; padding: 12px 0 8px;
+  }
+  .c-section-title {
+    font-size: 36px; font-weight: 700; letter-spacing: -0.025em; color: #1A1813;
+    margin-bottom: 8px; line-height: 1.1;
+  }
+  .c-section-desc {
+    font-size: 14px; color: #5C5748; max-width: 580px; margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  .c-stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-bottom: 40px; }
+  .c-stat {
+    border-top: 2px solid #1A1813;
+    border-right: 1px solid #D5CFC0;
+    padding: 18px 22px 18px 0;
+  }
+  .c-stat:last-child { border-right: none; }
+  .c-stat-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #7C2128; margin-bottom: 6px;
+  }
+  .c-stat-value { font-size: 30px; font-weight: 700; color: #1A1813; letter-spacing: -0.02em; }
+  .c-stat-delta { font-size: 12px; color: #5C5748; font-weight: 500; margin-top: 4px; }
+
+  .c-cards { display: flex; flex-direction: column; }
+  .c-card {
+    border-top: 1px solid #D5CFC0;
+    padding: 26px 0;
+    display: grid; grid-template-columns: 1fr 1.2fr 1fr; gap: 32px; align-items: start;
+  }
+  .c-card:last-child { border-bottom: 1px solid #D5CFC0; }
+  .c-card-num {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #7C2128; margin-bottom: 6px;
+  }
+  .c-card-name { font-size: 22px; font-weight: 700; color: #1A1813; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .c-card-meta { font-size: 12px; color: #5C5748; font-style: italic; margin-bottom: 14px; }
+  .c-tier {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; padding: 4px 10px; border: 1.5px solid currentColor;
+  }
+  .c-tier.critical { color: #7C2128; }
+  .c-tier.high { color: #5C2A14; }
+  .c-tier.medium { color: #5C5748; }
+  .c-score-block { margin-top: 16px; }
+  .c-score { font-family: 'Outfit'; font-weight: 700; font-size: 38px; color: #1A1813; letter-spacing: -0.03em; }
+  .c-score-of { font-size: 13px; color: #5C5748; font-weight: 500; }
+
+  .c-signals-label, .c-action-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #7C2128; margin-bottom: 10px;
+  }
+  .c-signal {
+    font-size: 13px; color: #2A2F37; padding: 3px 0;
+    display: flex; gap: 10px; align-items: flex-start; line-height: 1.5;
+  }
+  .c-signal::before { content: '§'; color: #7C2128; font-weight: 700; }
+  .c-action-text { font-size: 14px; color: #1A1813; line-height: 1.55; margin-bottom: 8px; font-weight: 500; }
+  .c-action-reason { font-size: 12px; color: #5C5748; line-height: 1.55; font-style: italic; }
+  .c-action-btn {
+    display: inline-block; background: #1A1813; color: #F5F1E8;
+    padding: 9px 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    text-decoration: none; margin-top: 16px;
+    border: 1.5px solid #1A1813;
+  }
+  .c-action-btn.alt { background: transparent; color: #1A1813; margin-left: 6px; }
+
+  /* =========== Pick Bar =========== */
+  .pick-bar {
+    position: sticky; bottom: 0; z-index: 99;
+    background: #0F1419; color: #fff;
+    padding: 16px 32px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    border-top: 1px solid #222;
+  }
+  .pick-bar-label { font-size: 13px; color: #cdd2d8; }
+  .pick-bar-options { display: flex; gap: 12px; }
+  .pick-btn {
+    background: transparent; color: #fff;
+    border: 1px solid #4a5159;
+    padding: 8px 16px; font-size: 13px; font-weight: 500;
+    border-radius: 6px; cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .pick-btn:hover { background: rgba(255,255,255,0.06); border-color: #6b7480; }
+  .pick-btn.a:hover { border-color: #C2603D; color: #E89D7C; }
+  .pick-btn.b:hover { border-color: #6366F1; color: #A5B4FC; }
+  .pick-btn.c:hover { border-color: #7C2128; color: #E89595; }
+</style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <h1>Trifecta — Design Exploration (v1.2 features)</h1>
+  <div class="nav-links">
+    <a href="#variant-a">A · Boardroom</a>
+    <a href="#variant-b">B · Studio</a>
+    <a href="#variant-c">C · Heritage</a>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- ====================  VARIANT A: BOARDROOM  ================ -->
+<!-- ============================================================ -->
+<section id="variant-a" class="variant v-boardroom">
+  <header class="variant-header">
+    <div>
+      <div class="variant-label">Variant A</div>
+      <h2 class="variant-title">Boardroom</h2>
+    </div>
+    <p class="variant-desc">Warm peer-CEO aesthetic. Reads as the inside of a private members' area — confident, considered, the kind of tool you'd expect a chapter board to actually use.</p>
+  </header>
+  <dl class="design-notes">
+    <div><dt>Type</dt><dd>Manrope (humanist sans, all weights)</dd></div>
+    <div><dt>Palette</dt><dd>Deep navy · warm cream · copper accent</dd></div>
+    <div><dt>Personality</dt><dd>Confident, member-only, considered</dd></div>
+  </dl>
+
+  <div class="demo-frame">
+    <div class="a-frame">
+      <header class="a-header">
+        <div class="a-brand">
+          <span class="a-logo">T³</span>
+          <span class="a-brand-name">Trifecta</span>
+          <span class="a-brand-sub">EO Dallas — Membership Chair</span>
+        </div>
+        <div class="a-header-meta">Monday, <strong>26 May 2026</strong> · 8:00am CT</div>
+      </header>
+
+      <div class="a-body">
+        <div class="a-section-label">This Week's Brief</div>
+        <h2 class="a-section-title">Five members need a conversation</h2>
+        <p class="a-section-desc">Engagement scores updated overnight. Three critical, one high-risk renewal in the next 30 days, one promising re-engagement opportunity.</p>
+
+        <div class="a-stat-row">
+          <div class="a-stat">
+            <div class="a-stat-label">At-Risk This Week</div>
+            <div class="a-stat-value">12</div>
+            <div class="a-stat-delta">▲ 3 from last week</div>
+          </div>
+          <div class="a-stat">
+            <div class="a-stat-label">Critical Tier</div>
+            <div class="a-stat-value">5</div>
+            <div class="a-stat-delta">▲ 1 from last week</div>
+          </div>
+          <div class="a-stat">
+            <div class="a-stat-label">Renewal &lt; 30 Days</div>
+            <div class="a-stat-value">8</div>
+            <div class="a-stat-delta good">2 confirmed renewed</div>
+          </div>
+          <div class="a-stat">
+            <div class="a-stat-label">Intent Survey</div>
+            <div class="a-stat-value">42<span style="font-size:18px;color:#8C8778;">/57</span></div>
+            <div class="a-stat-delta good">74% response rate</div>
+          </div>
+        </div>
+
+        <div class="a-cards">
+          <div class="a-card">
+            <div>
+              <div class="a-card-name">Michael de Koning</div>
+              <div class="a-card-meta">Member since 2025 · Renewal: 14 June 2026</div>
+              <span class="a-tier critical">Critical</span>
+              <div class="a-score">32<span class="a-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="a-signals-label">Why we're flagging</div>
+              <div class="a-signal">No forum attendance in 90 days</div>
+              <div class="a-signal">Spouse program invitations declined 3× in a row</div>
+              <div class="a-signal">WhatsApp activity dropped to None this month</div>
+              <div class="a-signal">Intent survey: <em>"Want to speak to someone"</em></div>
+            </div>
+            <div>
+              <div class="a-action-label">Suggested Action</div>
+              <div class="a-action-text">Call Michael directly this week.</div>
+              <div class="a-action-reason">You sponsored him in 2025 — the call should come from you, not the ED. Ask open-ended about Q1 business pressure; he hasn't raised it but the timing of the disengagement suggests something changed in March.</div>
+              <a href="#" class="a-action-btn">Mark Contacted</a>
+              <a href="#" class="a-action-btn alt">Snooze</a>
+            </div>
+          </div>
+
+          <div class="a-card">
+            <div>
+              <div class="a-card-name">Sarah Chen</div>
+              <div class="a-card-meta">Member since 2023 · Renewal: 22 June 2026</div>
+              <span class="a-tier critical">Critical</span>
+              <div class="a-score">38<span class="a-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="a-signals-label">Why we're flagging</div>
+              <div class="a-signal">Skipped last 3 chapter events</div>
+              <div class="a-signal">SAP engagement: 0 interactions in 6 months</div>
+              <div class="a-signal">Forum attendance dropped from 90% to 50%</div>
+              <div class="a-signal">Intent survey: <em>no response yet (sent 12 days ago)</em></div>
+            </div>
+            <div>
+              <div class="a-action-label">Suggested Action</div>
+              <div class="a-action-text">Send a personalised WhatsApp from David Park.</div>
+              <div class="a-action-reason">David is in her forum and has the closest relationship. Frame as "haven't seen you in a while, want to catch up before forum next week" — not a renewal pitch. Goal is to get her in the room.</div>
+              <a href="#" class="a-action-btn">Draft Message</a>
+              <a href="#" class="a-action-btn alt">Assign to David</a>
+            </div>
+          </div>
+
+          <div class="a-card">
+            <div>
+              <div class="a-card-name">David Park</div>
+              <div class="a-card-meta">Member since 2021 · Renewal: 8 July 2026</div>
+              <span class="a-tier high">High</span>
+              <div class="a-score">54<span class="a-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="a-signals-label">Why we're flagging</div>
+              <div class="a-signal">Forum attendance steady (75%) but local event attendance fell</div>
+              <div class="a-signal">Declined the last two SAP events</div>
+              <div class="a-signal">Open board action item: assigned by you 47 days ago</div>
+            </div>
+            <div>
+              <div class="a-action-label">Suggested Action</div>
+              <div class="a-action-text">Resolve the open action item first.</div>
+              <div class="a-action-reason">David is a steady member but you owe him a response on the forum-chair vote question. Close the loop, then frame the renewal conversation in the same exchange.</div>
+              <a href="#" class="a-action-btn">Open Action Item</a>
+              <a href="#" class="a-action-btn alt">Skip</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- =====================  VARIANT B: STUDIO  =================== -->
+<!-- ============================================================ -->
+<section id="variant-b" class="variant v-studio">
+  <header class="variant-header">
+    <div>
+      <div class="variant-label">Variant B</div>
+      <h2 class="variant-title">Studio</h2>
+    </div>
+    <p class="variant-desc">Modern SaaS-product aesthetic. Reads unambiguously as a real working software tool — the closest visual neighbour is Linear or Notion. Lowest risk for EO audiences who associate "software" with this look.</p>
+  </header>
+  <dl class="design-notes">
+    <div><dt>Type</dt><dd>Inter (the SaaS standard)</dd></div>
+    <div><dt>Palette</dt><dd>White · charcoal · electric indigo accent</dd></div>
+    <div><dt>Personality</dt><dd>Contemporary, neutral, product-first</dd></div>
+  </dl>
+
+  <div class="demo-frame">
+    <div class="b-frame">
+      <header class="b-header">
+        <div class="b-brand">
+          <span class="b-logo">T³</span>
+          <span class="b-brand-name">Trifecta</span>
+          <span class="b-brand-sub">· EO Dallas · Membership</span>
+        </div>
+        <div class="b-header-meta">Monday <strong>May 26</strong></div>
+      </header>
+
+      <div class="b-body">
+        <div class="b-section-label">This week's brief</div>
+        <h2 class="b-section-title">Five members need a conversation</h2>
+        <p class="b-section-desc">Engagement scores updated overnight. Three critical, one high-risk renewal in the next 30 days, one promising re-engagement opportunity.</p>
+
+        <div class="b-stat-row">
+          <div class="b-stat">
+            <div class="b-stat-label">At-risk this week</div>
+            <div class="b-stat-value">12</div>
+            <div class="b-stat-delta">+3 from last week</div>
+          </div>
+          <div class="b-stat">
+            <div class="b-stat-label">Critical tier</div>
+            <div class="b-stat-value">5</div>
+            <div class="b-stat-delta">+1 from last week</div>
+          </div>
+          <div class="b-stat">
+            <div class="b-stat-label">Renewal &lt; 30 days</div>
+            <div class="b-stat-value">8</div>
+            <div class="b-stat-delta good">2 confirmed renewed</div>
+          </div>
+          <div class="b-stat">
+            <div class="b-stat-label">Intent survey</div>
+            <div class="b-stat-value">42<span style="font-size:16px;color:#9CA3AF;">/57</span></div>
+            <div class="b-stat-delta good">74% response rate</div>
+          </div>
+        </div>
+
+        <div class="b-cards">
+          <div class="b-card">
+            <div>
+              <div class="b-card-name">Michael de Koning</div>
+              <div class="b-card-meta">Member since 2025 · Renewal Jun 14</div>
+              <span class="b-tier critical">Critical</span>
+              <div class="b-score">32<span class="b-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="b-signals-label">Why we're flagging</div>
+              <div class="b-signal">No forum attendance in 90 days</div>
+              <div class="b-signal">Spouse program invitations declined 3× in a row</div>
+              <div class="b-signal">WhatsApp activity dropped to None this month</div>
+              <div class="b-signal">Intent survey response: "Want to speak to someone"</div>
+            </div>
+            <div>
+              <div class="b-action-label">Suggested action</div>
+              <div class="b-action-text">Call Michael directly this week.</div>
+              <div class="b-action-reason">You sponsored him in 2025 — the call should come from you, not the ED. Ask open-ended about Q1 business pressure; he hasn't raised it but the timing of the disengagement suggests something changed in March.</div>
+              <a href="#" class="b-action-btn">Mark contacted</a>
+              <a href="#" class="b-action-btn alt">Snooze</a>
+            </div>
+          </div>
+
+          <div class="b-card">
+            <div>
+              <div class="b-card-name">Sarah Chen</div>
+              <div class="b-card-meta">Member since 2023 · Renewal Jun 22</div>
+              <span class="b-tier critical">Critical</span>
+              <div class="b-score">38<span class="b-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="b-signals-label">Why we're flagging</div>
+              <div class="b-signal">Skipped last 3 chapter events</div>
+              <div class="b-signal">SAP engagement: 0 interactions in 6 months</div>
+              <div class="b-signal">Forum attendance dropped from 90% to 50%</div>
+              <div class="b-signal">Intent survey: no response yet (sent 12 days ago)</div>
+            </div>
+            <div>
+              <div class="b-action-label">Suggested action</div>
+              <div class="b-action-text">Send a personalised WhatsApp from David Park.</div>
+              <div class="b-action-reason">David is in her forum and has the closest relationship. Frame as "haven't seen you in a while, want to catch up before forum next week" — not a renewal pitch. Goal is to get her in the room.</div>
+              <a href="#" class="b-action-btn">Draft message</a>
+              <a href="#" class="b-action-btn alt">Assign to David</a>
+            </div>
+          </div>
+
+          <div class="b-card">
+            <div>
+              <div class="b-card-name">David Park</div>
+              <div class="b-card-meta">Member since 2021 · Renewal Jul 8</div>
+              <span class="b-tier high">High</span>
+              <div class="b-score">54<span class="b-score-of">/100</span></div>
+            </div>
+            <div>
+              <div class="b-signals-label">Why we're flagging</div>
+              <div class="b-signal">Forum attendance steady (75%) but local event attendance fell</div>
+              <div class="b-signal">Declined the last two SAP events</div>
+              <div class="b-signal">Open board action item: assigned by you 47 days ago</div>
+            </div>
+            <div>
+              <div class="b-action-label">Suggested action</div>
+              <div class="b-action-text">Resolve the open action item first.</div>
+              <div class="b-action-reason">David is a steady member but you owe him a response on the forum-chair vote question. Close the loop, then frame the renewal conversation in the same exchange.</div>
+              <a href="#" class="b-action-btn">Open action item</a>
+              <a href="#" class="b-action-btn alt">Skip</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- ====================  VARIANT C: HERITAGE  ================== -->
+<!-- ============================================================ -->
+<section id="variant-c" class="variant v-heritage">
+  <header class="variant-header">
+    <div>
+      <div class="variant-label">Variant C</div>
+      <h2 class="variant-title">Heritage</h2>
+    </div>
+    <p class="variant-desc">Refined editorial. Keeps the print/editorial DNA you liked in v2 but swaps Georgia serif for a confident sans, replaces forest green with a warmer oxblood accent, and tightens the typographic hierarchy. The most distinctive of the three — memorable, but riskier.</p>
+  </header>
+  <dl class="design-notes">
+    <div><dt>Type</dt><dd>Outfit (confident geometric sans)</dd></div>
+    <div><dt>Palette</dt><dd>Rich cream · ink · oxblood accent</dd></div>
+    <div><dt>Personality</dt><dd>Editorial, considered, distinctive</dd></div>
+  </dl>
+
+  <div class="demo-frame">
+    <div class="c-frame">
+      <header class="c-header">
+        <div class="c-brand">
+          <span class="c-logo">T³</span>
+          <span class="c-brand-name">Trifecta</span>
+          <span class="c-brand-sub">EO Dallas / Membership Chair</span>
+        </div>
+        <div class="c-header-meta">Monday <strong>26 May 2026</strong></div>
+      </header>
+
+      <div class="c-body">
+        <div class="c-section-rule"></div>
+        <div class="c-section-label">No. 21 — This Week's Brief</div>
+        <h2 class="c-section-title">Five members need a conversation</h2>
+        <p class="c-section-desc">Engagement scores updated overnight. Three critical, one high-risk renewal in the next 30 days, one promising re-engagement opportunity.</p>
+
+        <div class="c-stat-row">
+          <div class="c-stat">
+            <div class="c-stat-label">At-Risk</div>
+            <div class="c-stat-value">12</div>
+            <div class="c-stat-delta">+3 wk/wk</div>
+          </div>
+          <div class="c-stat">
+            <div class="c-stat-label">Critical</div>
+            <div class="c-stat-value">5</div>
+            <div class="c-stat-delta">+1 wk/wk</div>
+          </div>
+          <div class="c-stat">
+            <div class="c-stat-label">Renewal &lt; 30 Days</div>
+            <div class="c-stat-value">8</div>
+            <div class="c-stat-delta">2 confirmed renewed</div>
+          </div>
+          <div class="c-stat">
+            <div class="c-stat-label">Intent Survey</div>
+            <div class="c-stat-value">42<span style="font-size:18px;color:#5C5748;">/57</span></div>
+            <div class="c-stat-delta">74% response rate</div>
+          </div>
+        </div>
+
+        <div class="c-cards">
+          <div class="c-card">
+            <div>
+              <div class="c-card-num">I.</div>
+              <div class="c-card-name">Michael de Koning</div>
+              <div class="c-card-meta">Member since 2025 · Renewal 14 June</div>
+              <span class="c-tier critical">Critical</span>
+              <div class="c-score-block">
+                <span class="c-score">32</span><span class="c-score-of">/100</span>
+              </div>
+            </div>
+            <div>
+              <div class="c-signals-label">Why we're flagging</div>
+              <div class="c-signal">No forum attendance in 90 days</div>
+              <div class="c-signal">Spouse program invitations declined 3× in a row</div>
+              <div class="c-signal">WhatsApp activity dropped to None this month</div>
+              <div class="c-signal">Intent survey: "Want to speak to someone"</div>
+            </div>
+            <div>
+              <div class="c-action-label">Suggested Action</div>
+              <div class="c-action-text">Call Michael directly this week.</div>
+              <div class="c-action-reason">You sponsored him in 2025 — the call should come from you, not the ED. Ask open-ended about Q1 business pressure; he hasn't raised it but the timing of the disengagement suggests something changed in March.</div>
+              <a href="#" class="c-action-btn">Mark Contacted</a>
+              <a href="#" class="c-action-btn alt">Snooze</a>
+            </div>
+          </div>
+
+          <div class="c-card">
+            <div>
+              <div class="c-card-num">II.</div>
+              <div class="c-card-name">Sarah Chen</div>
+              <div class="c-card-meta">Member since 2023 · Renewal 22 June</div>
+              <span class="c-tier critical">Critical</span>
+              <div class="c-score-block">
+                <span class="c-score">38</span><span class="c-score-of">/100</span>
+              </div>
+            </div>
+            <div>
+              <div class="c-signals-label">Why we're flagging</div>
+              <div class="c-signal">Skipped last 3 chapter events</div>
+              <div class="c-signal">SAP engagement: 0 interactions in 6 months</div>
+              <div class="c-signal">Forum attendance dropped from 90% to 50%</div>
+              <div class="c-signal">Intent survey: no response yet (12 days)</div>
+            </div>
+            <div>
+              <div class="c-action-label">Suggested Action</div>
+              <div class="c-action-text">Send a personalised WhatsApp from David Park.</div>
+              <div class="c-action-reason">David is in her forum and has the closest relationship. Frame as "haven't seen you in a while, want to catch up before forum next week" — not a renewal pitch. Goal is to get her in the room.</div>
+              <a href="#" class="c-action-btn">Draft Message</a>
+              <a href="#" class="c-action-btn alt">Assign to David</a>
+            </div>
+          </div>
+
+          <div class="c-card">
+            <div>
+              <div class="c-card-num">III.</div>
+              <div class="c-card-name">David Park</div>
+              <div class="c-card-meta">Member since 2021 · Renewal 8 July</div>
+              <span class="c-tier high">High</span>
+              <div class="c-score-block">
+                <span class="c-score">54</span><span class="c-score-of">/100</span>
+              </div>
+            </div>
+            <div>
+              <div class="c-signals-label">Why we're flagging</div>
+              <div class="c-signal">Forum attendance steady (75%) but local event attendance fell</div>
+              <div class="c-signal">Declined the last two SAP events</div>
+              <div class="c-signal">Open board action item: assigned by you 47 days ago</div>
+            </div>
+            <div>
+              <div class="c-action-label">Suggested Action</div>
+              <div class="c-action-text">Resolve the open action item first.</div>
+              <div class="c-action-reason">David is a steady member but you owe him a response on the forum-chair vote question. Close the loop, then frame the renewal conversation in the same exchange.</div>
+              <a href="#" class="c-action-btn">Open Action Item</a>
+              <a href="#" class="c-action-btn alt">Skip</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="pick-bar">
+  <div class="pick-bar-label">Compare the three. Pick a direction — I'll then build the full mockup (with all v1.2 features) and the short deck in the chosen language.</div>
+  <div class="pick-bar-options">
+    <button class="pick-btn a">A · Boardroom</button>
+    <button class="pick-btn b">B · Studio</button>
+    <button class="pick-btn c">C · Heritage</button>
+  </div>
+</div>
+
+</body>
+</html>
