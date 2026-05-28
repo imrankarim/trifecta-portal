@@ -211,13 +211,307 @@ describe("phone_normalize", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tier 2 — bool_from_keyword
+// ---------------------------------------------------------------------------
+describe("bool_from_keyword", () => {
+  const args = { true_values: ["Confirmed", "Yes", "Y"], false_values: ["Pending", "No", "N"] };
+
+  it("matches a configured true keyword (case-insensitive)", () => {
+    expect(applyTransform("bool_from_keyword", "confirmed", args)).toBe(true);
+  });
+  it("matches a configured false keyword", () => {
+    expect(applyTransform("bool_from_keyword", "Pending", args)).toBe(false);
+  });
+  it("returns null for absent input", () => {
+    expect(applyTransform("bool_from_keyword", "", args)).toBeNull();
+  });
+  it("defaults to false when false_values omitted and value doesn't match true_values", () => {
+    expect(applyTransform("bool_from_keyword", "anything else", { true_values: ["Yes"] })).toBe(false);
+  });
+  it("throws when value matches neither list", () => {
+    expect(() => applyTransform("bool_from_keyword", "Maybe", args)).toThrow(TransformError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 2 — concat
+// ---------------------------------------------------------------------------
+describe("concat", () => {
+  const record = { first_name: "Imran", middle: "", last_name: "Karim" };
+
+  it("joins multiple source fields with default space", () => {
+    expect(
+      applyTransform("concat", null, { sources: ["first_name", "last_name"] }, { record }),
+    ).toBe("Imran Karim");
+  });
+  it("uses a configured separator", () => {
+    expect(
+      applyTransform(
+        "concat",
+        null,
+        { sources: ["first_name", "last_name"], separator: ", " },
+        { record },
+      ),
+    ).toBe("Imran, Karim");
+  });
+  it("skips absent intermediate fields", () => {
+    expect(
+      applyTransform("concat", null, { sources: ["first_name", "middle", "last_name"] }, { record }),
+    ).toBe("Imran Karim");
+  });
+  it("returns null when all sources absent", () => {
+    expect(
+      applyTransform("concat", null, { sources: ["nope1", "nope2"] }, { record }),
+    ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 2 — array_of_text
+// ---------------------------------------------------------------------------
+describe("array_of_text", () => {
+  it("splits a semicolon-separated string (HubSpot default)", () => {
+    expect(applyTransform("array_of_text", "Vegetarian;Vegan;Nut Allergy", null)).toEqual([
+      "Vegetarian",
+      "Vegan",
+      "Nut Allergy",
+    ]);
+  });
+  it("passes an already-arrayed value through", () => {
+    expect(applyTransform("array_of_text", ["A", "B", "C"], null)).toEqual(["A", "B", "C"]);
+  });
+  it("uses a custom separator", () => {
+    expect(applyTransform("array_of_text", "a,b,c", { separator: "," })).toEqual(["a", "b", "c"]);
+  });
+  it("returns null for absent input", () => {
+    expect(applyTransform("array_of_text", "", null)).toBeNull();
+  });
+  it("filters out empty values from splits", () => {
+    expect(applyTransform("array_of_text", "a;;b;", null)).toEqual(["a", "b"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 2 — append_to_notes
+// ---------------------------------------------------------------------------
+describe("append_to_notes", () => {
+  it("builds a note entry with source tag and source_field", () => {
+    expect(
+      applyTransform(
+        "append_to_notes",
+        "Forum experience was excellent.",
+        { tag: "hubspot:exit_survey" },
+        { fieldName: "why_have_you_decided_to_leave_eo_dallas_" },
+      ),
+    ).toEqual({
+      text: "Forum experience was excellent.",
+      source: "hubspot:exit_survey",
+      source_field: "why_have_you_decided_to_leave_eo_dallas_",
+    });
+  });
+  it("omits source_field when no fieldName in ctx", () => {
+    expect(applyTransform("append_to_notes", "x", { tag: "test" })).toEqual({
+      text: "x",
+      source: "test",
+    });
+  });
+  it("returns null for absent value", () => {
+    expect(applyTransform("append_to_notes", "", { tag: "x" })).toBeNull();
+  });
+  it("throws when tag missing", () => {
+    expect(() => applyTransform("append_to_notes", "x", {})).toThrow(TransformError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 3 — checkbox_years_to_history
+// ---------------------------------------------------------------------------
+describe("checkbox_years_to_history", () => {
+  const args = { role: "Board Member" };
+
+  it("parses array of year ranges into board role history", () => {
+    const result = applyTransform(
+      "checkbox_years_to_history",
+      ["2024-2025", "2023-2024"],
+      args,
+    ) as Array<Record<string, string>>;
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({ role: "Board Member", start_date: "2024-07-01", end_date: "2025-06-30" });
+    expect(result[1]).toEqual({ role: "Board Member", start_date: "2023-07-01", end_date: "2024-06-30" });
+  });
+  it("sorts newest first", () => {
+    const result = applyTransform(
+      "checkbox_years_to_history",
+      ["2022-2023", "2025-2026", "2024-2025"],
+      args,
+    ) as Array<Record<string, string>>;
+    expect(result.map((e) => e.start_date)).toEqual(["2025-07-01", "2024-07-01", "2022-07-01"]);
+  });
+  it("accepts semicolon-separated string form", () => {
+    expect(
+      applyTransform("checkbox_years_to_history", "2024-2025;2023-2024", args),
+    ).toHaveLength(2);
+  });
+  it("honors custom fiscal-year boundaries", () => {
+    const result = applyTransform(
+      "checkbox_years_to_history",
+      ["2024-2025"],
+      { role: "Chair", start_month_day: "01-01", end_month_day: "12-31" },
+    ) as Array<Record<string, string>>;
+    expect(result[0]).toEqual({ role: "Chair", start_date: "2024-01-01", end_date: "2025-12-31" });
+  });
+  it("throws on malformed year-range", () => {
+    expect(() => applyTransform("checkbox_years_to_history", ["nope"], args)).toThrow(TransformError);
+  });
+  it("returns null for absent input", () => {
+    expect(applyTransform("checkbox_years_to_history", null, args)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 3 — multi_select_to_attendance
+// ---------------------------------------------------------------------------
+describe("multi_select_to_attendance", () => {
+  const args = { event_type: "learning" as const, fiscal_year: "2024-25" };
+
+  it("emits one attendance record per checked option", () => {
+    const result = applyTransform(
+      "multi_select_to_attendance",
+      ["August - Ryan & Chad Estis", "September - Gray Malin"],
+      args,
+    ) as Array<Record<string, unknown>>;
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      event_id: "learning:2024-25:august-ryan-chad-estis",
+      event_name: "August - Ryan & Chad Estis",
+      event_type: "learning",
+      fiscal_year: "2024-25",
+      attended: true,
+    });
+  });
+  it("produces deterministic event_ids (re-sync stable)", () => {
+    const a = applyTransform("multi_select_to_attendance", ["X"], args) as Array<{ event_id: string }>;
+    const b = applyTransform("multi_select_to_attendance", ["X"], args) as Array<{ event_id: string }>;
+    expect(a[0].event_id).toBe(b[0].event_id);
+  });
+  it("returns null for absent input", () => {
+    expect(applyTransform("multi_select_to_attendance", null, args)).toBeNull();
+  });
+  it("rejects an invalid event_type", () => {
+    expect(() =>
+      applyTransform("multi_select_to_attendance", ["X"], { ...args, event_type: "bogus" as never }),
+    ).toThrow(TransformError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 3 — multi_company_primary
+// ---------------------------------------------------------------------------
+describe("multi_company_primary", () => {
+  const record = {
+    company_1_dba: "Acme Inc",
+    company_1_annual_revenue: 5000000,
+    company_1_number_of_full_time_employees: 25,
+    company_2_dba: "Side Hustle LLC",
+    company_2_annual_revenue: 250000,
+    company_3_dba: "",
+    company_3_annual_revenue: null,
+  };
+  const args = {
+    prefix_template: "company_{n}_",
+    max_count: 3,
+    sub_fields: ["dba", "annual_revenue", "number_of_full_time_employees"],
+  };
+
+  it("returns records for populated company slots, skipping empty ones", () => {
+    const result = applyTransform("multi_company_primary", null, args, { record }) as Array<
+      Record<string, unknown>
+    >;
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({
+      _index: 1,
+      dba: "Acme Inc",
+      annual_revenue: 5000000,
+      number_of_full_time_employees: 25,
+    });
+    expect(result[1]).toMatchObject({ _index: 2, dba: "Side Hustle LLC" });
+  });
+  it("returns null when no company slots populated", () => {
+    expect(applyTransform("multi_company_primary", null, args, { record: {} })).toBeNull();
+  });
+  it("throws when prefix_template missing {n}", () => {
+    expect(() =>
+      applyTransform("multi_company_primary", null, { ...args, prefix_template: "company_" }, { record }),
+    ).toThrow(TransformError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tier 3 — group_to_jsonb
+// ---------------------------------------------------------------------------
+describe("group_to_jsonb", () => {
+  const schema = {
+    accountant_name: { groupName: "requalification_properties" },
+    accountant_email: { groupName: "requalification_properties" },
+    company_1_dba: { groupName: "requalification_properties" },
+    first_name: { groupName: "contactinformation" }, // not in group
+  };
+  const record = {
+    accountant_name: "Jane Doe CPA",
+    accountant_email: "jane@cpa.com",
+    company_1_dba: "Acme Inc",
+    first_name: "Imran",
+  };
+
+  it("bundles every property in the named group", () => {
+    const result = applyTransform(
+      "group_to_jsonb",
+      null,
+      { group_name: "requalification_properties" },
+      { record, schema },
+    );
+    expect(result).toEqual({
+      accountant_name: "Jane Doe CPA",
+      accountant_email: "jane@cpa.com",
+      company_1_dba: "Acme Inc",
+    });
+  });
+  it("excludes specified keys", () => {
+    const result = applyTransform(
+      "group_to_jsonb",
+      null,
+      { group_name: "requalification_properties", exclude_keys: ["company_1_dba"] },
+      { record, schema },
+    ) as Record<string, unknown>;
+    expect(result).not.toHaveProperty("company_1_dba");
+    expect(result).toHaveProperty("accountant_name");
+  });
+  it("returns null when no properties in group have values", () => {
+    expect(
+      applyTransform(
+        "group_to_jsonb",
+        null,
+        { group_name: "requalification_properties" },
+        { record: {}, schema },
+      ),
+    ).toBeNull();
+  });
+  it("throws when ctx.schema not provided", () => {
+    expect(() =>
+      applyTransform("group_to_jsonb", null, { group_name: "x" }, { record }),
+    ).toThrow(TransformError);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 describe("registry", () => {
-  it("exposes the Tier 1 + utility transforms", () => {
+  it("exposes all Tier 1, Tier 2, and Tier 3 transforms", () => {
     const names = implementedTransforms().sort();
     expect(names).toEqual(
       [
+        // Tier 1
         "bool_from_yes_no",
         "direct_copy",
         "email_normalize",
@@ -226,6 +520,16 @@ describe("registry", () => {
         "iso_date",
         "iso_datetime",
         "phone_normalize",
+        // Tier 2
+        "append_to_notes",
+        "array_of_text",
+        "bool_from_keyword",
+        "concat",
+        // Tier 3
+        "checkbox_years_to_history",
+        "group_to_jsonb",
+        "multi_company_primary",
+        "multi_select_to_attendance",
       ].sort(),
     );
   });
