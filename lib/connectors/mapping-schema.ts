@@ -40,7 +40,8 @@ export type TransformName =
   | "checkbox_years_to_history"     // EO Dallas dallas_bod pattern
   | "multi_select_to_attendance"    // EO Dallas n24_25_learning_event pattern
   | "multi_company_primary"         // primary + spillover into custom_fields
-  | "group_to_jsonb";               // bundle a source field-group into JSONB
+  | "group_to_jsonb"                // bundle a source field-group into JSONB
+  | "derive_contact_type";          // multi-field signal precedence → contact_type
 
 /**
  * One mapping rule: take a source value, transform it, write it to a target.

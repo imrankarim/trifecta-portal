@@ -23,7 +23,7 @@ export default async function EditMemberPage({
   const { data: member } = await supabase
     .from("members")
     .select(
-      "trifecta_member_id, email_primary, first_name, last_name, preferred_name, phone_mobile, job_title, linkedin_url, company_name, city, state_province, membership_status, join_date_original",
+      "trifecta_member_id, email_primary, first_name, last_name, preferred_name, phone_mobile, job_title, linkedin_url, company_name, city, state_province, contact_type, membership_status, join_date_original",
     )
     .eq("trifecta_member_id", params.id)
     .single();

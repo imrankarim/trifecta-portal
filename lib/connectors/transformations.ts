@@ -659,6 +659,98 @@ function group_to_jsonb(
   return Object.keys(out).length > 0 ? out : null;
 }
 
+/**
+ * Multi-field signal-precedence rule engine. Reads from ctx.record across
+ * multiple fields; emits the first matching rule's `emit` value.
+ *
+ * Designed for synthesizing a categorical field (most commonly contact_type)
+ * from scattered signals in the source data. Per ADR-005, EO Dallas's HubSpot
+ * has no single field that says "this is a sponsor" — that fact is derived
+ * from `sap_active_ is_set`. Similarly "this is a prospective member" is
+ * derived from `application is_set` or `chapter_consideration_email is_set`.
+ *
+ * The `source` field on the mapping rule is documentation only — the
+ * transform reads multiple fields from ctx.record, not the rule's source.
+ *
+ * args: {
+ *   rules: Array<{
+ *     condition: {
+ *       field?: string;        // single field; required for is_set / value_in
+ *       is_set?: boolean;      // true → field has a non-absent value
+ *       value_in?: string[];   // field value is one of these (string compare)
+ *       any_of?: Array<{ field: string; is_set?: boolean; value_in?: string[] }>;
+ *     };
+ *     emit: string;
+ *   }>;
+ *   default?: string | null;   // emitted if no rule matches. null → skip
+ * }
+ */
+interface DeriveCondition {
+  field?: string;
+  is_set?: boolean;
+  value_in?: string[];
+  any_of?: Array<{ field: string; is_set?: boolean; value_in?: string[] }>;
+}
+interface DeriveRule {
+  condition: DeriveCondition;
+  emit: string;
+}
+interface DeriveContactTypeArgs {
+  rules: DeriveRule[];
+  default?: string | null;
+}
+
+function matchesAtomicCondition(
+  cond: { field?: string; is_set?: boolean; value_in?: string[] },
+  record: Record<string, unknown>,
+): boolean {
+  if (!cond.field) return false;
+  const v = record[cond.field];
+  if (cond.is_set === true) {
+    if (isAbsent(v)) return false;
+    // For arrays, treat empty as absent
+    if (Array.isArray(v) && v.length === 0) return false;
+  }
+  if (cond.is_set === false) {
+    if (!isAbsent(v) && !(Array.isArray(v) && v.length === 0)) return false;
+  }
+  if (cond.value_in) {
+    if (isAbsent(v)) return false;
+    if (!cond.value_in.includes(String(v))) return false;
+  }
+  return true;
+}
+
+function matchesCondition(cond: DeriveCondition, record: Record<string, unknown>): boolean {
+  if (cond.any_of && cond.any_of.length > 0) {
+    return cond.any_of.some((c) => matchesAtomicCondition(c, record));
+  }
+  return matchesAtomicCondition(cond, record);
+}
+
+function derive_contact_type(
+  _value: unknown,
+  args: unknown,
+  ctx: TransformContext = {},
+): string | null {
+  const a = requireArgs<DeriveContactTypeArgs>(
+    "derive_contact_type",
+    args,
+    ctx.fieldName,
+    "{ rules: [...], default? }",
+  );
+  if (!Array.isArray(a.rules)) {
+    throw new TransformError("derive_contact_type", "args.rules must be an array", ctx.fieldName);
+  }
+  const record = ctx.record ?? {};
+  for (const rule of a.rules) {
+    if (matchesCondition(rule.condition, record)) {
+      return rule.emit;
+    }
+  }
+  return a.default ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Internal helpers (Tier 3)
 // ---------------------------------------------------------------------------
@@ -696,6 +788,7 @@ const REGISTRY: Partial<Record<TransformName, TransformImpl>> = {
   multi_select_to_attendance,
   multi_company_primary,
   group_to_jsonb,
+  derive_contact_type,
 };
 
 /**

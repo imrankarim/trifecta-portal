@@ -27,6 +27,57 @@ export const EO_DALLAS_HUBSPOT_AUTHORED_BY = "human:imran-karim+claude-2026-05-2
 
 export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
   // ============================================================
+  // CONTACT TYPE — derived from multiple signals (ADR-005).
+  // Sync filter: contacts where this returns null are skipped.
+  // ============================================================
+  {
+    source: "_derived:signals",
+    target: "members.contact_type",
+    transform: "derive_contact_type",
+    transform_args: {
+      rules: [
+        // Strongest signal: SAP record → Sponsor
+        { condition: { field: "sap_active_", is_set: true }, emit: "Sponsor" },
+        // Explicit Spouse tag
+        { condition: { field: "membership_status", value_in: ["Spouse"] }, emit: "Spouse" },
+        // Any member-lifecycle status → Member
+        {
+          condition: {
+            field: "membership_status",
+            value_in: ["Active", "Inactive", "Sabbatical", "Alumni"],
+          },
+          emit: "Member",
+        },
+        // Prospect signals → Member (lifecycle = Prospect, set separately)
+        {
+          condition: {
+            any_of: [
+              { field: "application", is_set: true },
+              { field: "chapter_consideration_email", is_set: true },
+            ],
+          },
+          emit: "Member",
+        },
+        // Past board service → Member (likely Former Member lifecycle)
+        {
+          condition: {
+            any_of: [
+              { field: "dallas_bod", is_set: true },
+              { field: "bod_position", is_set: true },
+            ],
+          },
+          emit: "Member",
+        },
+      ],
+      // null → sync skips this contact (no signal of operational interest)
+      default: null,
+    },
+    notes:
+      "ADR-005 signal-precedence. Sync layer skips contacts where this returns null (no operational signal).",
+    authored_by: EO_DALLAS_HUBSPOT_AUTHORED_BY,
+  },
+
+  // ============================================================
   // IDENTITY  (custom properties beyond hubspot_default_v1)
   // ============================================================
   {
@@ -38,7 +89,7 @@ export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
   },
 
   // ============================================================
-  // MEMBERSHIP STATUS — the headline mapping
+  // MEMBERSHIP STATUS — the lifecycle stage (only meaningful for Members).
   // ============================================================
   {
     source: "membership_status",
@@ -49,13 +100,13 @@ export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
         Active: "Active",
         Inactive: "Lapsed",
         Sabbatical: "On Leave",
-        Alumni: "Alumni",
-        Spouse: "Spouse",
+        Alumni: "Former Member", // renamed in the 20260528 migration
+        // Spouse no longer mapped here — it's a contact_type, not a status
       },
       default: null,
     },
     notes:
-      "EO Dallas's Inactive→Lapsed; Sabbatical→On Leave; Spouse handled per ADR-004 design question 2.",
+      "EO Dallas's Inactive→Lapsed; Sabbatical→On Leave; Alumni→Former Member (ADR-005 rename). Spouse handled by contact_type derivation above.",
     authored_by: EO_DALLAS_HUBSPOT_AUTHORED_BY,
   },
   {

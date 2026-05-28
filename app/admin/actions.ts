@@ -6,22 +6,24 @@ import { createClient } from "@/lib/supabase/server";
 
 export type MemberFormState = { error: string | null };
 
+// Lifecycle stages for actual EO members. Only meaningful when contact_type='Member'.
+// "Staff" and "Spouse" remain in the underlying enum for back-compat (per ADR-005)
+// but are not user-selectable here — they're now contact_type values, not statuses.
 const MEMBERSHIP_STATUSES = [
   "Active",
   "On Leave",
   "Grace Period",
   "Lapsed",
-  "Alumni",
+  "Former Member",
   "Prospect",
-  "Staff",
-  "Spouse",
 ] as const;
 type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
 
-// Non-member statuses: people who exist in the directory but aren't EO members.
-// Join date and company are optional for these. Scoring engine skips them
-// entirely. Per ADR-004 design-question resolutions for Staff and Spouse.
-const NON_MEMBER_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Staff", "Spouse"]);
+const CONTACT_TYPES = ["Member", "Staff", "Spouse", "Sponsor", "Other"] as const;
+type ContactType = (typeof CONTACT_TYPES)[number];
+
+// Lifecycle stages where join_date and company aren't applicable, even for Members.
+const NON_BUSINESS_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Prospect"]);
 
 function readForm(form: FormData) {
   const get = (k: string) => {
@@ -29,8 +31,19 @@ function readForm(form: FormData) {
     return typeof v === "string" && v.trim() !== "" ? v.trim() : null;
   };
 
+  const contactType = get("contact_type");
+  if (!contactType || !CONTACT_TYPES.includes(contactType as ContactType)) {
+    throw new Error("Invalid contact type");
+  }
+  const isMember = contactType === "Member";
+
   const status = get("membership_status");
-  if (!status || !MEMBERSHIP_STATUSES.includes(status as MembershipStatus)) {
+  if (isMember) {
+    if (!status || !MEMBERSHIP_STATUSES.includes(status as MembershipStatus)) {
+      throw new Error("Membership status is required for Members");
+    }
+  } else if (status && !MEMBERSHIP_STATUSES.includes(status as MembershipStatus)) {
+    // Non-members shouldn't normally have a status; if one was set, reject unknown values.
     throw new Error("Invalid membership status");
   }
 
@@ -39,16 +52,21 @@ function readForm(form: FormData) {
   const lastName = get("last_name");
   const joinDate = get("join_date_original");
   const company = get("company_name");
-  const isNonMember = NON_MEMBER_STATUSES.has(status as MembershipStatus);
 
   if (!email || !firstName || !lastName) {
     throw new Error("Missing required field");
   }
-  if (!isNonMember && (!joinDate || !company)) {
-    throw new Error("Join date and company are required for chapter members.");
+
+  // join_date + company required only when contact_type=Member AND status is a "business" lifecycle
+  // (i.e. not Prospect — prospects don't have a join date yet, and might not have a company).
+  if (isMember && status && !NON_BUSINESS_STATUSES.has(status as MembershipStatus)) {
+    if (!joinDate || !company) {
+      throw new Error("Join date and company are required for active/lapsed/former members.");
+    }
   }
 
   return {
+    contact_type: contactType as ContactType,
     email_primary: email,
     first_name: firstName,
     last_name: lastName,
@@ -59,7 +77,7 @@ function readForm(form: FormData) {
     company_name: company,
     city: get("city"),
     state_province: get("state_province"),
-    membership_status: status as MembershipStatus,
+    membership_status: isMember ? (status as MembershipStatus) : null,
     join_date_original: joinDate,
   };
 }

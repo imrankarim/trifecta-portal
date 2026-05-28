@@ -14,13 +14,23 @@ const MEMBERSHIP_STATUSES = [
   "On Leave",
   "Grace Period",
   "Lapsed",
-  "Alumni",
+  "Former Member",
   "Prospect",
-  "Staff",
-  "Spouse",
 ] as const;
 type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
-const NON_MEMBER_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Staff", "Spouse"]);
+
+const CONTACT_TYPES = ["Member", "Staff", "Spouse", "Sponsor", "Other"] as const;
+type ContactType = (typeof CONTACT_TYPES)[number];
+
+const NON_BUSINESS_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Prospect"]);
+
+const CONTACT_TYPE_LABELS: Record<ContactType, string> = {
+  Member: "Member",
+  Staff: "Staff (paid chapter staff, e.g. ED)",
+  Spouse: "Spouse (partner of a member)",
+  Sponsor: "Sponsor (SAP / strategic alliance partner)",
+  Other: "Other",
+};
 
 export type MemberInitial = {
   trifecta_member_id?: string;
@@ -34,6 +44,7 @@ export type MemberInitial = {
   company_name?: string | null;
   city?: string | null;
   state_province?: string | null;
+  contact_type?: string | null;
   membership_status?: string | null;
   join_date_original?: string | null;
 };
@@ -53,10 +64,15 @@ export function MemberForm({
       : updateMember.bind(null, initial!.trifecta_member_id!);
 
   const [state, formAction] = useFormState(action, initialState);
+  const [contactType, setContactType] = useState<ContactType>(
+    (initial?.contact_type as ContactType | undefined) ?? "Member",
+  );
   const [status, setStatus] = useState<MembershipStatus>(
     (initial?.membership_status as MembershipStatus | undefined) ?? "Active",
   );
-  const isNonMember = NON_MEMBER_STATUSES.has(status);
+  const isMember = contactType === "Member";
+  // join_date + company optional for Prospect; not applicable at all for non-Members
+  const needsBusinessFields = isMember && !NON_BUSINESS_STATUSES.has(status);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -81,38 +97,55 @@ export function MemberForm({
         </Field>
       </Section>
 
-      <Section title="Membership">
-        <Field label="Membership status" required>
+      <Section title="Category & membership">
+        <Field label="Contact type" required>
           <select
-            name="membership_status"
+            name="contact_type"
             required
-            value={status}
-            onChange={(e) => setStatus(e.target.value as MembershipStatus)}
+            value={contactType}
+            onChange={(e) => setContactType(e.target.value as ContactType)}
             className={inputCls}
           >
+            {CONTACT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {CONTACT_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field
+          label="Membership status"
+          required={isMember}
+          hint={isMember ? undefined : "Members only"}
+        >
+          <select
+            name="membership_status"
+            required={isMember}
+            disabled={!isMember}
+            value={isMember ? status : ""}
+            onChange={(e) => setStatus(e.target.value as MembershipStatus)}
+            className={isMember ? inputCls : inputDisabledCls}
+          >
+            {!isMember && <option value="">—</option>}
             {MEMBERSHIP_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s === "Staff"
-                  ? "Staff (paid chapter staff, e.g. ED)"
-                  : s === "Spouse"
-                    ? "Spouse (partner of a member)"
-                    : s}
+                {s}
               </option>
             ))}
           </select>
         </Field>
         <Field
           label="Join date (original)"
-          required={!isNonMember}
-          hint={isNonMember ? "Not applicable" : undefined}
+          required={needsBusinessFields}
+          hint={needsBusinessFields ? undefined : isMember ? "Optional for prospects" : "Not applicable"}
         >
           <input
             type="date"
             name="join_date_original"
-            required={!isNonMember}
-            disabled={isNonMember}
+            required={needsBusinessFields}
+            disabled={!isMember}
             defaultValue={initial?.join_date_original ?? ""}
-            className={isNonMember ? inputDisabledCls : inputCls}
+            className={isMember ? inputCls : inputDisabledCls}
           />
         </Field>
       </Section>
@@ -120,12 +153,12 @@ export function MemberForm({
       <Section title="Business & location">
         <Field
           label="Company"
-          required={!isNonMember}
-          hint={isNonMember ? "Optional" : undefined}
+          required={needsBusinessFields}
+          hint={needsBusinessFields ? undefined : "Optional"}
         >
           <input
             name="company_name"
-            required={!isNonMember}
+            required={needsBusinessFields}
             defaultValue={initial?.company_name ?? ""}
             className={inputCls}
           />

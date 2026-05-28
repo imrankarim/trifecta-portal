@@ -504,6 +504,127 @@ describe("group_to_jsonb", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tier 3 — derive_contact_type
+// ---------------------------------------------------------------------------
+describe("derive_contact_type", () => {
+  // Realistic EO Dallas signal-precedence rules (matches the mapping config)
+  const eoDallasRules = {
+    rules: [
+      // Strongest signal: SAP record → Sponsor (regardless of other fields)
+      { condition: { field: "sap_active_", is_set: true }, emit: "Sponsor" },
+      // Explicit Spouse tag
+      { condition: { field: "membership_status", value_in: ["Spouse"] }, emit: "Spouse" },
+      // Any member-lifecycle status → Member
+      {
+        condition: {
+          field: "membership_status",
+          value_in: ["Active", "Inactive", "Sabbatical", "Alumni", "Former Member"],
+        },
+        emit: "Member",
+      },
+      // Prospect signals → Member (with Prospect lifecycle, set elsewhere)
+      {
+        condition: {
+          any_of: [
+            { field: "application", is_set: true },
+            { field: "chapter_consideration_email", is_set: true },
+          ],
+        },
+        emit: "Member",
+      },
+      // Past board service → Member (likely Former Member)
+      {
+        condition: { any_of: [{ field: "dallas_bod", is_set: true }, { field: "bod_position", is_set: true }] },
+        emit: "Member",
+      },
+    ],
+    default: null,
+  };
+
+  it("returns Sponsor for a contact with sap_active_ set (highest precedence)", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { sap_active_: "Yes", membership_status: "Active" },
+      }),
+    ).toBe("Sponsor");
+  });
+
+  it("returns Spouse for Spouse membership_status", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { membership_status: "Spouse" },
+      }),
+    ).toBe("Spouse");
+  });
+
+  it("returns Member for Active membership_status", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { membership_status: "Active" },
+      }),
+    ).toBe("Member");
+  });
+
+  it("returns Member for a prospect via application field", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { application: "Complete" },
+      }),
+    ).toBe("Member");
+  });
+
+  it("returns Member for a former board member without current status", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { dallas_bod: ["2022-2023"] },
+      }),
+    ).toBe("Member");
+  });
+
+  it("returns null for a contact with no matching signals (default null = skip)", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { firstname: "Random", email: "random@x.com" },
+      }),
+    ).toBeNull();
+  });
+
+  it("treats empty arrays as absent for is_set checks", () => {
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { dallas_bod: [] },
+      }),
+    ).toBeNull();
+  });
+
+  it("uses explicit default when provided", () => {
+    expect(
+      applyTransform(
+        "derive_contact_type",
+        null,
+        { rules: [{ condition: { field: "x", is_set: true }, emit: "Y" }], default: "Other" },
+        { record: {} },
+      ),
+    ).toBe("Other");
+  });
+
+  it("throws when rules missing", () => {
+    expect(() => applyTransform("derive_contact_type", null, {}, { record: {} })).toThrow(
+      TransformError,
+    );
+  });
+
+  it("rule precedence is strict (first match wins)", () => {
+    // Spouse membership + active SAP — Sponsor wins (rule 1 before rule 2)
+    expect(
+      applyTransform("derive_contact_type", null, eoDallasRules, {
+        record: { sap_active_: "Yes", membership_status: "Spouse" },
+      }),
+    ).toBe("Sponsor");
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Registry
 // ---------------------------------------------------------------------------
 describe("registry", () => {
@@ -527,6 +648,7 @@ describe("registry", () => {
         "concat",
         // Tier 3
         "checkbox_years_to_history",
+        "derive_contact_type",
         "group_to_jsonb",
         "multi_company_primary",
         "multi_select_to_attendance",

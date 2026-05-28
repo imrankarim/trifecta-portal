@@ -24,7 +24,7 @@ export default async function AdminPage() {
   const { data: members } = await supabase
     .from("members")
     .select(
-      "trifecta_member_id, first_name, last_name, email_primary, company_name, membership_status",
+      "trifecta_member_id, first_name, last_name, email_primary, company_name, contact_type, membership_status",
     )
     .order("last_name", { ascending: true });
 
@@ -70,6 +70,7 @@ export default async function AdminPage() {
                   <th className="text-left px-4 py-3 font-medium">Name</th>
                   <th className="text-left px-4 py-3 font-medium">Email</th>
                   <th className="text-left px-4 py-3 font-medium">Company</th>
+                  <th className="text-left px-4 py-3 font-medium">Type</th>
                   <th className="text-left px-4 py-3 font-medium">Status</th>
                   <th className="text-right px-4 py-3 font-medium" />
                 </tr>
@@ -82,7 +83,8 @@ export default async function AdminPage() {
                     </td>
                     <td className="px-4 py-3 text-gray-600">{m.email_primary}</td>
                     <td className="px-4 py-3 text-gray-600">{m.company_name}</td>
-                    <td className="px-4 py-3 text-gray-600">{m.membership_status}</td>
+                    <td className="px-4 py-3 text-gray-600">{m.contact_type}</td>
+                    <td className="px-4 py-3 text-gray-600">{m.membership_status ?? "—"}</td>
                     <td className="px-4 py-3 text-right">
                       <Link
                         href={`/admin/${m.trifecta_member_id}`}
