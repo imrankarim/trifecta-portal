@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/sign-in", "/auth"];
+// Routes that bypass Supabase auth in middleware. They handle their own
+// access control — /api/cron checks Authorization: Bearer ${CRON_SECRET}.
+const PUBLIC_ROUTES = ["/sign-in", "/auth", "/api/cron"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
