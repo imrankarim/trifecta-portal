@@ -12,10 +12,11 @@
 // HubSpot for the native CRM later without rewriting business logic.
 
 import type {
-  ConnectorMember,
+  ConnectorRecord,
   ConnectorAttendanceRecord,
   ConnectorPipelineStage,
   OutreachOutcomeWrite,
+  SourceSchema,
 } from "./types";
 
 export interface DataSource {
@@ -35,11 +36,27 @@ export interface DataSource {
 
   /**
    * Return all member records the source knows about.
+   *
+   * Per ADR-004, the connector returns SOURCE-SHAPED records — every property
+   * the source has, untransformed. The sync layer applies the chapter's
+   * mapping rules to produce canonical Trifecta state. Connector code does
+   * NOT pre-map field names.
+   *
    * @param opts.since — if provided, return only records modified at or after this timestamp.
    *                    Connectors that don't support incremental sync may ignore this and return all.
-   * @returns normalized ConnectorMember[]. Empty array if connector has no members.
+   * @returns ConnectorRecord[]. Empty array if connector has no members.
    */
-  getMembers(opts?: { since?: Date }): Promise<ConnectorMember[]>;
+  getMembers(opts?: { since?: Date }): Promise<ConnectorRecord[]>;
+
+  /**
+   * Return the source's current property schema. Used by the sync layer to:
+   *   - populate TransformContext.schema (for transforms like group_to_jsonb)
+   *   - feed Phase 2 schema-drift detection (compare to last-seen snapshot)
+   *   - power the Phase 3 LLM mapping-proposal agent
+   *
+   * @returns SourceSchema keyed by property name. Empty object if not applicable.
+   */
+  discoverSchema(): Promise<SourceSchema>;
 
   /**
    * Return event / forum attendance records.

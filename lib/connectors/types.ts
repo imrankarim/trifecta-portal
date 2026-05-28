@@ -47,44 +47,44 @@ export type ExternalIds = Partial<Record<KnownSourceName, string>> & {
 };
 
 /**
- * The minimum useful shape every connector should return per member.
- * Unknown fields are `null` (or `undefined` for optionals) — never empty strings.
- * EO-specific fields (membership_status, join_date_original, ...) are only
- * populated when the source actually has them (e.g. HubSpot custom properties).
+ * A raw source record from any connector. Per ADR-004 the connector returns
+ * SOURCE-SHAPED data — every property the source has, untransformed. The sync
+ * layer applies the chapter's mapping rules (starter + chapter-specific) to
+ * turn these into canonical members + custom_fields + notes writes.
+ *
+ * Connector code does NOT pre-map firstname→first_name or anything else.
+ * That's the mapping config's job.
  */
-export interface ConnectorMember {
+export interface ConnectorRecord {
+  /** External identifiers — typically just one (the source's own ID) at fetch time. */
   externalIds: ExternalIds;
-
-  // §3.1 Identity
-  emailPrimary: string;
-  emailsAdditional?: string[];
-  firstName: string;
-  lastName: string;
-  preferredName?: string | null;
-  phoneMobile?: string | null;
-  linkedinUrl?: string | null;
-
-  // §3.3 Geography
-  city?: string | null;
-  stateProvince?: string | null;
-  /** ISO 3166-1 alpha-2. Sync layer normalizes other formats. */
-  country?: string | null;
-
-  // §3.4 Business
-  companyName?: string | null;
-  jobTitle?: string | null;
-  industryVertical?: string | null;
-  companyWebsite?: string | null;
-
-  // §3.2 EO Membership — only populated when source has it
-  membershipStatus?: string | null;
-  /** ISO date string YYYY-MM-DD. */
-  joinDateOriginal?: string | null;
-
-  // Sync metadata
+  /**
+   * Every property this source returned for this record. Keys match the
+   * source's own property names (e.g. HubSpot: "firstname", "membership_status",
+   * "dallas_bod"). Values are whatever the source's API returned — strings,
+   * numbers, arrays, booleans, nulls.
+   */
+  sourceProperties: Record<string, unknown>;
   /** ISO timestamp — source's notion of last-modified. Used for incremental sync. */
   sourceLastModifiedAt?: string | null;
 }
+
+/**
+ * Per-property metadata from the source's schema endpoint. Used by the sync
+ * layer to populate TransformContext.schema (for transforms like
+ * group_to_jsonb) and for Phase 2 schema-drift detection.
+ */
+export interface SourceProperty {
+  name: string;
+  label?: string;
+  groupName?: string;
+  type?: string;       // e.g. HubSpot: "string" | "enumeration" | "number" | "date" | "datetime" | "bool"
+  fieldType?: string;  // e.g. HubSpot: "text" | "select" | "radio" | "checkbox" | "textarea" | "booleancheckbox" | "date"
+  options?: Array<{ value: string; label: string }>;
+}
+
+/** Source schema keyed by property name. Returned by DataSource.discoverSchema(). */
+export type SourceSchema = Record<string, SourceProperty>;
 
 /**
  * One attendance event observation per member.
