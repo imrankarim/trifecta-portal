@@ -11,7 +11,69 @@ const TIER_STYLES: Record<string, string> = {
   Monitor: "bg-gray-100 text-gray-700 ring-gray-200",
 };
 
-export default async function DashboardPage() {
+// Lifecycle values that count as "currently a member" — distinct from Prospect
+// (pre-member) and Former Member (post-member).
+const CURRENT_MEMBER_STATUSES = new Set([
+  "Active",
+  "On Leave",
+  "Grace Period",
+  "Lapsed",
+]);
+
+type TabKey = "members" | "prospects" | "sponsors" | "former";
+
+interface TabDef {
+  key: TabKey;
+  label: string;
+  description: string;
+  /** Predicate over a member row to decide tab membership. */
+  predicate: (m: { contact_type: string | null; membership_status: string | null }) => boolean;
+  /** True if the risk-tier / score columns are meaningful for this tab. */
+  showScoring: boolean;
+}
+
+const TABS: TabDef[] = [
+  {
+    key: "members",
+    label: "Members",
+    description: "Current EO members — Active, On Leave, Grace Period, Lapsed",
+    predicate: (m) =>
+      m.contact_type === "Member" && CURRENT_MEMBER_STATUSES.has(m.membership_status ?? ""),
+    showScoring: true,
+  },
+  {
+    key: "prospects",
+    label: "Prospects",
+    description: "Membership Chair's pipeline — not yet members",
+    predicate: (m) => m.contact_type === "Member" && m.membership_status === "Prospect",
+    showScoring: false,
+  },
+  {
+    key: "sponsors",
+    label: "Sponsors",
+    description: "Strategic Alliance Partners",
+    predicate: (m) => m.contact_type === "Sponsor",
+    showScoring: false,
+  },
+  {
+    key: "former",
+    label: "Former Members",
+    description: "Members no longer with the chapter",
+    predicate: (m) =>
+      m.contact_type === "Member" && m.membership_status === "Former Member",
+    showScoring: true, // scores can stay meaningful for historical view
+  },
+];
+
+function isTabKey(v: string | undefined): v is TabKey {
+  return v != null && TABS.some((t) => t.key === v);
+}
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { tab?: string };
+}) {
   const supabase = createClient();
 
   const {
@@ -22,21 +84,38 @@ export default async function DashboardPage() {
   const { data: role } = await supabase.rpc("current_user_role");
   const isAdmin = role === "Admin" || role === "ExecutiveDirector";
 
-  // RLS-scoped: returns the one chapter the user belongs to (or zero rows if
-  // their auth user isn't linked to a member yet).
+  const activeTab: TabKey = isTabKey(searchParams.tab) ? searchParams.tab : "members";
+  const activeTabDef = TABS.find((t) => t.key === activeTab)!;
+
+  // RLS-scoped: returns the one chapter the user belongs to
   const { data: chapters } = await supabase
     .from("chapters")
     .select("trifecta_chapter_id, chapter_name, city, country, eo_region")
     .limit(1);
   const chapter = chapters?.[0];
 
-  // RLS-scoped: returns only members in the user's own chapter.
+  // Load all members once; filter + bucket in JS. At 232 rows this is trivial;
+  // we'd switch to server-side filtering when chapters scale past ~5k members.
   const { data: members, error: membersError } = await supabase
     .from("members")
     .select(
-      "trifecta_member_id, first_name, last_name, email_primary, membership_status, churn_risk_tier, engagement_score_current",
+      "trifecta_member_id, first_name, last_name, email_primary, company_name, contact_type, membership_status, churn_risk_tier, engagement_score_current",
     )
     .order("last_name", { ascending: true });
+
+  const allMembers = members ?? [];
+  const counts: Record<TabKey, number> = {
+    members: 0,
+    prospects: 0,
+    sponsors: 0,
+    former: 0,
+  };
+  for (const m of allMembers) {
+    for (const tab of TABS) {
+      if (tab.predicate(m)) counts[tab.key]++;
+    }
+  }
+  const visible = allMembers.filter(activeTabDef.predicate);
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -72,7 +151,7 @@ export default async function DashboardPage() {
           <NoChapterNotice email={user.email ?? ""} />
         ) : (
           <>
-            <section className="mb-8">
+            <section className="mb-6">
               <p className="text-sm uppercase tracking-wide text-gray-500">Chapter</p>
               <h2 className="text-2xl font-semibold text-gray-900">{chapter.chapter_name}</h2>
               <p className="text-sm text-gray-600">
@@ -80,21 +159,46 @@ export default async function DashboardPage() {
               </p>
             </section>
 
-            <section>
-              <div className="flex items-baseline justify-between mb-3">
-                <h3 className="text-base font-semibold text-gray-900">Members</h3>
-                <p className="text-sm text-gray-500">
-                  {members?.length ?? 0} {(members?.length ?? 0) === 1 ? "member" : "members"}
-                </p>
+            {/* Tab nav */}
+            <nav className="border-b border-gray-200 mb-6" aria-label="Directory segments">
+              <div className="flex gap-1 -mb-px">
+                {TABS.map((tab) => {
+                  const isActive = tab.key === activeTab;
+                  return (
+                    <Link
+                      key={tab.key}
+                      href={`/dashboard?tab=${tab.key}`}
+                      className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                        isActive
+                          ? "border-blue-600 text-blue-700"
+                          : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
+                      }`}
+                      aria-current={isActive ? "page" : undefined}
+                    >
+                      {tab.label}
+                      <span
+                        className={`ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded text-xs font-medium ${
+                          isActive ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-600"
+                        }`}
+                      >
+                        {counts[tab.key]}
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
+            </nav>
+
+            <section>
+              <p className="text-sm text-gray-500 mb-3">{activeTabDef.description}</p>
 
               {membersError ? (
                 <div className="bg-red-50 border border-red-200 rounded-md p-4 text-sm text-red-800">
                   Could not load members: {membersError.message}
                 </div>
-              ) : !members || members.length === 0 ? (
+              ) : visible.length === 0 ? (
                 <div className="bg-white border border-gray-200 rounded-md p-8 text-center text-sm text-gray-500">
-                  No members in this chapter yet.
+                  No {activeTabDef.label.toLowerCase()} to show.
                 </div>
               ) : (
                 <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
@@ -103,33 +207,43 @@ export default async function DashboardPage() {
                       <tr>
                         <th className="text-left px-4 py-3 font-medium">Name</th>
                         <th className="text-left px-4 py-3 font-medium">Email</th>
+                        <th className="text-left px-4 py-3 font-medium">Company</th>
                         <th className="text-left px-4 py-3 font-medium">Status</th>
-                        <th className="text-left px-4 py-3 font-medium">Risk</th>
-                        <th className="text-right px-4 py-3 font-medium">Score</th>
+                        {activeTabDef.showScoring && (
+                          <>
+                            <th className="text-left px-4 py-3 font-medium">Risk</th>
+                            <th className="text-right px-4 py-3 font-medium">Score</th>
+                          </>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {members.map((m) => (
+                      {visible.map((m) => (
                         <tr key={m.trifecta_member_id} className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-gray-900">
                             {m.first_name} {m.last_name}
                           </td>
                           <td className="px-4 py-3 text-gray-600">{m.email_primary}</td>
-                          <td className="px-4 py-3 text-gray-600">{m.membership_status}</td>
-                          <td className="px-4 py-3">
-                            {m.churn_risk_tier ? (
-                              <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ring-1 ring-inset ${TIER_STYLES[m.churn_risk_tier] ?? TIER_STYLES.Monitor}`}
-                              >
-                                {m.churn_risk_tier}
-                              </span>
-                            ) : (
-                              <span className="text-xs text-gray-400">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-gray-700">
-                            {m.engagement_score_current ?? "—"}
-                          </td>
+                          <td className="px-4 py-3 text-gray-600">{m.company_name ?? "—"}</td>
+                          <td className="px-4 py-3 text-gray-600">{m.membership_status ?? "—"}</td>
+                          {activeTabDef.showScoring && (
+                            <>
+                              <td className="px-4 py-3">
+                                {m.churn_risk_tier ? (
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ring-1 ring-inset ${TIER_STYLES[m.churn_risk_tier] ?? TIER_STYLES.Monitor}`}
+                                  >
+                                    {m.churn_risk_tier}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-gray-400">—</span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-right tabular-nums text-gray-700">
+                                {m.engagement_score_current ?? "—"}
+                              </td>
+                            </>
+                          )}
                         </tr>
                       ))}
                     </tbody>
