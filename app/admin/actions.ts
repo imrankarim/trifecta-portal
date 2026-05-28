@@ -14,8 +14,14 @@ const MEMBERSHIP_STATUSES = [
   "Alumni",
   "Prospect",
   "Staff",
+  "Spouse",
 ] as const;
 type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+
+// Non-member statuses: people who exist in the directory but aren't EO members.
+// Join date and company are optional for these. Scoring engine skips them
+// entirely. Per ADR-004 design-question resolutions for Staff and Spouse.
+const NON_MEMBER_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Staff", "Spouse"]);
 
 function readForm(form: FormData) {
   const get = (k: string) => {
@@ -33,12 +39,12 @@ function readForm(form: FormData) {
   const lastName = get("last_name");
   const joinDate = get("join_date_original");
   const company = get("company_name");
-  const isStaff = status === "Staff";
+  const isNonMember = NON_MEMBER_STATUSES.has(status as MembershipStatus);
 
   if (!email || !firstName || !lastName) {
     throw new Error("Missing required field");
   }
-  if (!isStaff && (!joinDate || !company)) {
+  if (!isNonMember && (!joinDate || !company)) {
     throw new Error("Join date and company are required for chapter members.");
   }
 

@@ -17,8 +17,10 @@ const MEMBERSHIP_STATUSES = [
   "Alumni",
   "Prospect",
   "Staff",
+  "Spouse",
 ] as const;
 type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
+const NON_MEMBER_STATUSES: ReadonlySet<MembershipStatus> = new Set<MembershipStatus>(["Staff", "Spouse"]);
 
 export type MemberInitial = {
   trifecta_member_id?: string;
@@ -54,7 +56,7 @@ export function MemberForm({
   const [status, setStatus] = useState<MembershipStatus>(
     (initial?.membership_status as MembershipStatus | undefined) ?? "Active",
   );
-  const isStaff = status === "Staff";
+  const isNonMember = NON_MEMBER_STATUSES.has(status);
 
   return (
     <form action={formAction} className="space-y-6">
@@ -90,23 +92,27 @@ export function MemberForm({
           >
             {MEMBERSHIP_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s === "Staff" ? "Staff (not a chapter member)" : s}
+                {s === "Staff"
+                  ? "Staff (paid chapter staff, e.g. ED)"
+                  : s === "Spouse"
+                    ? "Spouse (partner of a member)"
+                    : s}
               </option>
             ))}
           </select>
         </Field>
         <Field
           label="Join date (original)"
-          required={!isStaff}
-          hint={isStaff ? "Not applicable for staff" : undefined}
+          required={!isNonMember}
+          hint={isNonMember ? "Not applicable" : undefined}
         >
           <input
             type="date"
             name="join_date_original"
-            required={!isStaff}
-            disabled={isStaff}
+            required={!isNonMember}
+            disabled={isNonMember}
             defaultValue={initial?.join_date_original ?? ""}
-            className={isStaff ? inputDisabledCls : inputCls}
+            className={isNonMember ? inputDisabledCls : inputCls}
           />
         </Field>
       </Section>
@@ -114,12 +120,12 @@ export function MemberForm({
       <Section title="Business & location">
         <Field
           label="Company"
-          required={!isStaff}
-          hint={isStaff ? "Optional for staff" : undefined}
+          required={!isNonMember}
+          hint={isNonMember ? "Optional" : undefined}
         >
           <input
             name="company_name"
-            required={!isStaff}
+            required={!isNonMember}
             defaultValue={initial?.company_name ?? ""}
             className={inputCls}
           />
