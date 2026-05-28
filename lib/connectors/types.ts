@@ -75,7 +75,8 @@ export interface ConnectorRecord {
  * group_to_jsonb) and for Phase 2 schema-drift detection.
  */
 export interface SourceProperty {
-  name: string;
+  /** Redundant when the schema is keyed by name (the typical case); optional for that reason. */
+  name?: string;
   label?: string;
   groupName?: string;
   type?: string;       // e.g. HubSpot: "string" | "enumeration" | "number" | "date" | "datetime" | "bool"
