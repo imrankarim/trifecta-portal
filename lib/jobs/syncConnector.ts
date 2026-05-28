@@ -248,7 +248,7 @@ function derivePropertiesToFetch(
     // know exactly which ones without parsing the args, but we can scrape the
     // most common patterns.
     if (rule.source.startsWith("_derived:")) {
-      // Walk derive_contact_type's rules.condition.field references
+      // Walk derive_from_signals's rules.condition.field references
       const args = rule.transform_args as
         | {
             rules?: Array<{
@@ -382,7 +382,12 @@ async function writeRecord(
     // Update existing row with the canonical columns + contact_type
     const updates: Record<string, unknown> = { ...plan.memberColumns };
     if (plan.contactType) updates.contact_type = plan.contactType;
-    // Skip update if nothing to write (just contact_type with no column changes is still useful)
+    // Guard: membership_status only meaningful for Members (ADR-005). Null it
+    // out for Sponsor/Spouse/Staff/Other to prevent rules from accidentally
+    // writing lifecycle values to non-Members.
+    if (plan.contactType && plan.contactType !== "Member") {
+      updates.membership_status = null;
+    }
     if (Object.keys(updates).length > 0) {
       const { error } = await supabase
         .from("members")
@@ -408,6 +413,10 @@ async function writeRecord(
       first_name: plan.memberColumns.first_name ?? "Unknown",
       last_name: plan.memberColumns.last_name ?? "Unknown",
     };
+    // Guard: membership_status only meaningful for Members (ADR-005).
+    if (plan.contactType !== "Member") {
+      delete insertPayload.membership_status;
+    }
     const { data, error } = await supabase
       .from("members")
       .insert(insertPayload)

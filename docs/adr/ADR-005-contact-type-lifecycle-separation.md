@@ -5,6 +5,7 @@
 **Phase impact:** Phase 1 Week 2 (schema + UI + EO Dallas mapping config + sync filter); Phase 2+ (every chapter inherits this shape)
 **Related:** [ADR-004 — Connector mapping as data](ADR-004-connector-mapping-as-data.md); [v1.1 §3.2 EO Membership fields](../Trifecta_Developer_Specification_v1.1.md)
 **Supersedes:** none
+**Implementation note (2026-05-28):** The transform was initially named `derive_from_signals`. After validating empirically that EO Dallas's HubSpot leaves `membership_status` empty for every contact (sanity check found 0 explicit Actives across 2,501 records), the same rule engine was reused to derive `membership_status` via a fallback chain — so the transform was renamed to `derive_from_signals` to reflect its general nature. References below use the current name.
 
 ---
 
@@ -58,7 +59,7 @@ The `Staff` and `Spouse` values remain in the underlying `membership_status` enu
 
 ### Sync filter changes
 
-The HubSpot sync no longer filters on "membership_status is set." Instead, it computes `contact_type` via a multi-signal **`derive_contact_type`** transform that reads several source fields by precedence:
+The HubSpot sync no longer filters on "membership_status is set." Instead, it computes `contact_type` via a multi-signal **`derive_from_signals`** transform that reads several source fields by precedence:
 
 1. `sap_active_` set → `Sponsor`
 2. `membership_status` == `Spouse` → `Spouse`
@@ -108,7 +109,7 @@ The principled cleanup. ~2-3 hours of focused work, done before the first sync.
 - **Schema correctly represents the domain.** Every future query, dashboard, scoring rule, and digest filter has a clean axis: "give me all Members" vs "give me all Sponsors."
 - **Sync filter is principled.** "Contacts of operational interest" is the union of signals, not a single field. The filter is a transform — same machinery as everything else.
 - **Existing data migrates cleanly.** Jon (was `membership_status='Staff'`) → `contact_type='Staff'`, `membership_status=null`. No backfill scripts needed.
-- **EO Dallas's HubSpot fields map naturally.** The `derive_contact_type` rule engine encodes their domain knowledge as configuration, not code.
+- **EO Dallas's HubSpot fields map naturally.** The `derive_from_signals` rule engine encodes their domain knowledge as configuration, not code.
 - **Phase 3 LLM mapping-proposal agent gets simpler.** The agent emits two clean values (category + lifecycle) instead of a single overloaded enum.
 - **Future schema growth has the right place.** Adding `Sponsor` tiers later, or `Vendor` as a category, or `Alumni-Warm` vs `Alumni-Cold` as lifecycle nuances — each fits in the right axis.
 
@@ -116,28 +117,28 @@ The principled cleanup. ~2-3 hours of focused work, done before the first sync.
 
 - **`membership_status` still carries deprecated `Staff` and `Spouse` values** until a Phase 2 cleanup migration that swaps the enum out properly. Code paths now ignore them; the values exist purely as cruft.
 - **Form UI is slightly more nested.** Contact type → conditionally show status → conditionally require join date + company. Two extra dropdown states for the admin. Worth it for the data quality.
-- **The `derive_contact_type` rule engine is a more complex transform than the rest of the Tier 3 set.** Documented carefully; tested with realistic EO Dallas inputs. New transforms of this shape (multi-field signal-based derivations) will reuse the same engine.
+- **The `derive_from_signals` rule engine is a more complex transform than the rest of the Tier 3 set.** Documented carefully; tested with realistic EO Dallas inputs. New transforms of this shape (multi-field signal-based derivations) will reuse the same engine.
 
 ### Implications for the codebase
 
 Already done as part of landing this ADR:
 
 - `supabase/migrations/20260528120000_contact_type_and_former_member.sql` — adds the enum, the column with `NOT NULL DEFAULT 'Member'`, the chapter-scoped index, migrates Jon, drops `NOT NULL` on `membership_status`, renames `Alumni` → `Former Member`. Applied to staging.
-- `lib/connectors/transformations.ts` — adds the `derive_contact_type` transform with a small rule engine (`is_set`, `value_in`, `any_of`). 10 new tests, 125 total passing.
+- `lib/connectors/transformations.ts` — adds the `derive_from_signals` transform with a small rule engine (`is_set`, `value_in`, `any_of`). 10 new tests, 125 total passing.
 - `lib/connectors/chapter_configs/eo_dallas_hubspot.ts` — adds the contact_type derivation rule at the top of the field-mapping list; updates the `membership_status` value_map for the Alumni rename. Re-seeded to `chapters.data_sources_config.hubspot.mappings`.
 - `app/admin/MemberForm.tsx` + `app/admin/actions.ts` + `app/admin/page.tsx` + `app/admin/[id]/page.tsx` — contact_type dropdown, conditional membership_status, list view shows the new column.
 
 Coming in the next commits:
 
-- `lib/jobs/syncConnector.ts` — orchestration that skips contacts when `derive_contact_type` returns null, applies the rest of the mapping rules, upserts into `members` + `member_external_ids` + `members.custom_fields` + `members.notes`.
+- `lib/jobs/syncConnector.ts` — orchestration that skips contacts when `derive_from_signals` returns null, applies the rest of the mapping rules, upserts into `members` + `member_external_ids` + `members.custom_fields` + `members.notes`.
 
 ### Implications for Phase 1
 
-The Week 2 HubSpot sync runs against the new shape. The 2,501 EO Dallas contacts get filtered through `derive_contact_type` and the operationally-relevant subset lands in `members` with correct category + lifecycle.
+The Week 2 HubSpot sync runs against the new shape. The 2,501 EO Dallas contacts get filtered through `derive_from_signals` and the operationally-relevant subset lands in `members` with correct category + lifecycle.
 
 ### Implications for Phase 2+
 
-- New chapters inherit the structure. Their `derive_contact_type` rule lists encode their own domain knowledge as data.
+- New chapters inherit the structure. Their `derive_from_signals` rule lists encode their own domain knowledge as data.
 - Schema cleanup migration to drop deprecated `Staff` / `Spouse` from `membership_status`.
 - Potential addition of more contact_type values (`Vendor`, `Alumni` if we ever distinguish warm-engaged former members from cold churned ones, etc.) — each landing as a Postgres `ADD VALUE`, no schema redesign.
 - Dashboard view evolves to show per-category counts and filters.

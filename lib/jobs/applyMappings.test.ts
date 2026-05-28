@@ -90,7 +90,7 @@ describe("applyMappings — contact_type derivation (sync filter)", () => {
     {
       source: "_derived:signals",
       target: "members.contact_type",
-      transform: "derive_contact_type",
+      transform: "derive_from_signals",
       transform_args: {
         rules: [
           { condition: { field: "sap_active_", is_set: true }, emit: "Sponsor" },
@@ -347,7 +347,7 @@ describe("applyMappings — realistic EO Dallas record", () => {
       {
         source: "_derived:signals",
         target: "members.contact_type",
-        transform: "derive_contact_type",
+        transform: "derive_from_signals",
         transform_args: {
           rules: [{ condition: { field: "membership_status", value_in: ["Active"] }, emit: "Member" }],
           default: null,
@@ -411,7 +411,7 @@ describe("applyMappings — realistic EO Dallas record", () => {
         {
           source: "_derived:signals",
           target: "members.contact_type",
-          transform: "derive_contact_type",
+          transform: "derive_from_signals",
           transform_args: {
             rules: [
               { condition: { field: "membership_status", is_set: true }, emit: "Member" },

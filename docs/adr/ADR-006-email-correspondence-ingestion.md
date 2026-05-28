@@ -173,7 +173,7 @@ Per-chapter config under `chapters.data_sources_config.email_ingestion`:
 **Zero code changes.** Phase 1 makes no commitments about email ingestion. The compatibility constraints are minimal:
 
 - The proposed `inbound_communications` / `communication_extractions` tables don't exist yet. When Phase 2 lands them, the existing `members.notes` JSONB column (which already holds free-form `{ts, source, text}` entries) remains the natural sink for human-confirmed extractions of the form "ED's outreach call notes."
-- The `derive_contact_type` transform (ADR-005) handles the case of a new prospect first encountered via email — same auto-creation logic that handles a new prospect first encountered via HubSpot. The email source produces a `ConnectorRecord` with `externalIds.email_communications` (or similar); the same sync orchestration upserts it.
+- The `derive_from_signals` transform (ADR-005) handles the case of a new prospect first encountered via email — same auto-creation logic that handles a new prospect first encountered via HubSpot. The email source produces a `ConnectorRecord` with `externalIds.email_communications` (or similar); the same sync orchestration upserts it.
 
 ### Implications for Phase 2 (sequence)
 

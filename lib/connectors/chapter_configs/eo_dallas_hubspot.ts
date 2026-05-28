@@ -31,9 +31,9 @@ export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
   // Sync filter: contacts where this returns null are skipped.
   // ============================================================
   {
-    source: "_derived:signals",
+    source: "_derived:contact_type",
     target: "members.contact_type",
-    transform: "derive_contact_type",
+    transform: "derive_from_signals",
     transform_args: {
       rules: [
         // Strongest signal: SAP record → Sponsor
@@ -92,21 +92,51 @@ export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
   // MEMBERSHIP STATUS — the lifecycle stage (only meaningful for Members).
   // ============================================================
   {
-    source: "membership_status",
+    source: "_derived:membership_status",
     target: "members.membership_status",
-    transform: "enum_map",
+    transform: "derive_from_signals",
     transform_args: {
-      value_map: {
-        Active: "Active",
-        Inactive: "Lapsed",
-        Sabbatical: "On Leave",
-        Alumni: "Former Member", // renamed in the 20260528 migration
-        // Spouse no longer mapped here — it's a contact_type, not a status
-      },
+      rules: [
+        // 1-4. HubSpot's explicit value wins when set
+        { condition: { field: "membership_status", value_in: ["Active"] }, emit: "Active" },
+        { condition: { field: "membership_status", value_in: ["Inactive"] }, emit: "Lapsed" },
+        { condition: { field: "membership_status", value_in: ["Sabbatical"] }, emit: "On Leave" },
+        { condition: { field: "membership_status", value_in: ["Alumni"] }, emit: "Former Member" },
+
+        // 5. Fallback: HubSpot's membership_status is empty for ALL EO Dallas contacts
+        //    (verified empirically — none populated). Infer Active when join_date is set.
+        //    Validated by sanity check 2026-05-28: 125 contacts match this rule, vs.
+        //    chapter's known 130-140 active member count (~95% match — close enough that
+        //    the 5-15 gap is manual-cleanup territory in Trifecta /admin).
+        { condition: { field: "join_date", is_set: true }, emit: "Active" },
+
+        // 6. Pure-prospect lifecycle: application or chapter_consideration_email set,
+        //    no join_date yet → Prospect
+        {
+          condition: {
+            any_of: [
+              { field: "application", is_set: true },
+              { field: "chapter_consideration_email", is_set: true },
+            ],
+          },
+          emit: "Prospect",
+        },
+
+        // 7. Past board service with no other current signal → Former Member
+        {
+          condition: {
+            any_of: [
+              { field: "dallas_bod", is_set: true },
+              { field: "bod_position", is_set: true },
+            ],
+          },
+          emit: "Former Member",
+        },
+      ],
       default: null,
     },
     notes:
-      "EO Dallas's Inactive→Lapsed; Sabbatical→On Leave; Alumni→Former Member (ADR-005 rename). Spouse handled by contact_type derivation above.",
+      "Rule (b) per ADR-005 sanity-check. EO Dallas's HubSpot doesn't populate membership_status — we derive from a precedence chain: explicit value → join_date Active fallback → Prospect → Former Member. Sync layer null-clears for non-Member contact_types.",
     authored_by: EO_DALLAS_HUBSPOT_AUTHORED_BY,
   },
   {

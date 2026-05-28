@@ -663,11 +663,12 @@ function group_to_jsonb(
  * Multi-field signal-precedence rule engine. Reads from ctx.record across
  * multiple fields; emits the first matching rule's `emit` value.
  *
- * Designed for synthesizing a categorical field (most commonly contact_type)
- * from scattered signals in the source data. Per ADR-005, EO Dallas's HubSpot
- * has no single field that says "this is a sponsor" — that fact is derived
- * from `sap_active_ is_set`. Similarly "this is a prospective member" is
- * derived from `application is_set` or `chapter_consideration_email is_set`.
+ * Originally introduced as `derive_contact_type` (ADR-005) for synthesizing
+ * contact_type from scattered signals (sap_active_ → Sponsor; application →
+ * Member, etc.). Generalized to handle any signal-derived field — same
+ * shape works for deriving membership_status from a fallback chain, deriving
+ * recruitment_source from multiple referral fields, etc. The mapping rule's
+ * `target` tells the sync layer where the derived value lands.
  *
  * The `source` field on the mapping rule is documentation only — the
  * transform reads multiple fields from ctx.record, not the rule's source.
@@ -695,7 +696,7 @@ interface DeriveRule {
   condition: DeriveCondition;
   emit: string;
 }
-interface DeriveContactTypeArgs {
+interface DeriveFromSignalsArgs {
   rules: DeriveRule[];
   default?: string | null;
 }
@@ -728,19 +729,19 @@ function matchesCondition(cond: DeriveCondition, record: Record<string, unknown>
   return matchesAtomicCondition(cond, record);
 }
 
-function derive_contact_type(
+function derive_from_signals(
   _value: unknown,
   args: unknown,
   ctx: TransformContext = {},
 ): string | null {
-  const a = requireArgs<DeriveContactTypeArgs>(
-    "derive_contact_type",
+  const a = requireArgs<DeriveFromSignalsArgs>(
+    "derive_from_signals",
     args,
     ctx.fieldName,
     "{ rules: [...], default? }",
   );
   if (!Array.isArray(a.rules)) {
-    throw new TransformError("derive_contact_type", "args.rules must be an array", ctx.fieldName);
+    throw new TransformError("derive_from_signals", "args.rules must be an array", ctx.fieldName);
   }
   const record = ctx.record ?? {};
   for (const rule of a.rules) {
@@ -788,7 +789,7 @@ const REGISTRY: Partial<Record<TransformName, TransformImpl>> = {
   multi_select_to_attendance,
   multi_company_primary,
   group_to_jsonb,
-  derive_contact_type,
+  derive_from_signals,
 };
 
 /**

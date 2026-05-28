@@ -504,9 +504,9 @@ describe("group_to_jsonb", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Tier 3 — derive_contact_type
+// Tier 3 — derive_from_signals (also used as the contact_type derivation)
 // ---------------------------------------------------------------------------
-describe("derive_contact_type", () => {
+describe("derive_from_signals", () => {
   // Realistic EO Dallas signal-precedence rules (matches the mapping config)
   const eoDallasRules = {
     rules: [
@@ -543,7 +543,7 @@ describe("derive_contact_type", () => {
 
   it("returns Sponsor for a contact with sap_active_ set (highest precedence)", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { sap_active_: "Yes", membership_status: "Active" },
       }),
     ).toBe("Sponsor");
@@ -551,7 +551,7 @@ describe("derive_contact_type", () => {
 
   it("returns Spouse for Spouse membership_status", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { membership_status: "Spouse" },
       }),
     ).toBe("Spouse");
@@ -559,7 +559,7 @@ describe("derive_contact_type", () => {
 
   it("returns Member for Active membership_status", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { membership_status: "Active" },
       }),
     ).toBe("Member");
@@ -567,7 +567,7 @@ describe("derive_contact_type", () => {
 
   it("returns Member for a prospect via application field", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { application: "Complete" },
       }),
     ).toBe("Member");
@@ -575,7 +575,7 @@ describe("derive_contact_type", () => {
 
   it("returns Member for a former board member without current status", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { dallas_bod: ["2022-2023"] },
       }),
     ).toBe("Member");
@@ -583,7 +583,7 @@ describe("derive_contact_type", () => {
 
   it("returns null for a contact with no matching signals (default null = skip)", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { firstname: "Random", email: "random@x.com" },
       }),
     ).toBeNull();
@@ -591,7 +591,7 @@ describe("derive_contact_type", () => {
 
   it("treats empty arrays as absent for is_set checks", () => {
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { dallas_bod: [] },
       }),
     ).toBeNull();
@@ -600,7 +600,7 @@ describe("derive_contact_type", () => {
   it("uses explicit default when provided", () => {
     expect(
       applyTransform(
-        "derive_contact_type",
+        "derive_from_signals",
         null,
         { rules: [{ condition: { field: "x", is_set: true }, emit: "Y" }], default: "Other" },
         { record: {} },
@@ -609,7 +609,7 @@ describe("derive_contact_type", () => {
   });
 
   it("throws when rules missing", () => {
-    expect(() => applyTransform("derive_contact_type", null, {}, { record: {} })).toThrow(
+    expect(() => applyTransform("derive_from_signals", null, {}, { record: {} })).toThrow(
       TransformError,
     );
   });
@@ -617,7 +617,7 @@ describe("derive_contact_type", () => {
   it("rule precedence is strict (first match wins)", () => {
     // Spouse membership + active SAP — Sponsor wins (rule 1 before rule 2)
     expect(
-      applyTransform("derive_contact_type", null, eoDallasRules, {
+      applyTransform("derive_from_signals", null, eoDallasRules, {
         record: { sap_active_: "Yes", membership_status: "Spouse" },
       }),
     ).toBe("Sponsor");
@@ -648,7 +648,7 @@ describe("registry", () => {
         "concat",
         // Tier 3
         "checkbox_years_to_history",
-        "derive_contact_type",
+        "derive_from_signals",
         "group_to_jsonb",
         "multi_company_primary",
         "multi_select_to_attendance",

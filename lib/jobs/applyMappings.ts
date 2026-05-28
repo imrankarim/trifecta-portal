@@ -128,7 +128,7 @@ export function applyMappings(
 
 /**
  * Recognize special source selectors used by transforms that don't read from
- * a single literal source field (e.g. derive_contact_type, group_to_jsonb,
+ * a single literal source field (e.g. derive_from_signals, group_to_jsonb,
  * multi_company_primary). For these, the transform reads from ctx.record
  * directly, and the literal lookup is skipped.
  */
@@ -144,7 +144,7 @@ function isSpecialSource(source: string): boolean {
 function dispatch(plan: WritePlan, rule: FieldMapping, value: unknown): void {
   const target = rule.target;
 
-  // members.contact_type — derive_contact_type goes here
+  // members.contact_type — derive_from_signals (configured for contact_type) goes here
   if (target === "members.contact_type") {
     plan.contactType = String(value);
     return;
