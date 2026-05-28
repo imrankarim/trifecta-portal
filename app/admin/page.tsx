@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { SyncButton } from "./SyncButton";
 
 export default async function AdminPage() {
   const supabase = createClient();
@@ -45,6 +46,7 @@ export default async function AdminPage() {
             >
               ← Back to dashboard
             </Link>
+            <SyncButton />
             <Link
               href="/admin/new"
               className="bg-gray-900 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-800"

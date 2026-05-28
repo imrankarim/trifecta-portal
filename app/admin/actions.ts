@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { syncConnector, type SyncResult } from "@/lib/jobs/syncConnector";
 
 export type MemberFormState = { error: string | null };
 
@@ -125,6 +127,50 @@ export async function createMember(
   }
 
   redirect("/admin");
+}
+
+export type SyncFormState = {
+  result: SyncResult | null;
+  error: string | null;
+};
+
+export async function runHubSpotSync(
+  _prev: SyncFormState,
+  _formData: FormData,
+): Promise<SyncFormState> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { result: null, error: "Not signed in." };
+
+    const { data: role } = await supabase.rpc("current_user_role");
+    if (role !== "Admin" && role !== "ExecutiveDirector") {
+      return { result: null, error: "You don't have permission to run a sync." };
+    }
+
+    const { data: chapter } = await supabase
+      .from("chapters")
+      .select("trifecta_chapter_id")
+      .limit(1)
+      .single();
+    if (!chapter) return { result: null, error: "No chapter linked to your account." };
+
+    // Sync needs to bypass RLS to upsert across all members in the chapter.
+    const admin = createAdminClient();
+    const result = await syncConnector({
+      supabase: admin,
+      chapterId: chapter.trifecta_chapter_id,
+      sourceName: "hubspot",
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/dashboard");
+    return { result, error: null };
+  } catch (e) {
+    return { result: null, error: e instanceof Error ? e.message : String(e) };
+  }
 }
 
 export async function updateMember(
