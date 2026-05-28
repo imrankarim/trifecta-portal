@@ -1,0 +1,265 @@
+# EO Dallas — HubSpot Contact Custom Properties
+
+_Generated 2026-05-28 from HubSpot `/crm/v3/properties/contacts`._
+
+- Total properties: **652**
+- HubSpot standard: **422**
+- EO Dallas customized: **230**
+
+This document is the ground-truth inventory of the EO Dallas HubSpot portal's contact-property customizations. It's the source for the HubSpot → Trifecta field-mapping decisions.
+
+---
+
+## contact_activity  (19)
+
+- **`did_you_attend_any_eo_events_outside_of_our_chapter_`** — _Did You Attend Any EO Events Outside of Our Chapter?_  (enumeration/checkbox) — options: `Yes - Regional Events | Yes - Global Events | Yes - Other Chapter Events | No`
+- **`do_you_have_any_additional_feedback_for_our_board_to_consider_`** — _Do You Have Any Additional Feedback for Our Board to Consider?_  (string/textarea)
+- **`how_long_were_you_a_member_of_eo_dallas_`** — _How Long Were You a Member of EO Dallas?_  (number/number)
+- **`if_eo_dallas_ultimately_failed_to_meet_your_needs_as_an_entrepreneur__please_share_why__and_what_yo`** — _If EO Dallas Ultimately Failed to Meet Your Needs as an Entrepreneur, Please Share Why, and What You Believe Should Be Done Differently:_  (string/textarea)
+- **`if_you_have_additional_reasons__please_share_below_`** — _If You Have Additional Reasons, Please Share Below:_  (string/textarea)
+- **`membership_status`** — _Membership Status_  (enumeration/select) — options: `Active | Inactive | Alumni | Spouse | Sabbatical`
+- **`n24_25_learning_event`** — _24-25 Learning Event_  (enumeration/checkbox) — options: `August - Ryan & Chad Estis | September - Gray Malin | November - Rachel Wilson | January - Errol Doebler | February - David Gerard | February - Breakfast with Champions | March - Speech Thomas | May - John O'Leary`
+- **`n24_25_social_event`** — _24-25 Social Event_  (enumeration/checkbox) — options: `July - A Night of Pottery & Brews | September - Two-Steppin the Night Away | September - Family KidZania Outing | October - Shakespeare in the Park | October - State Fair of Texas | November - Gratitude Potluck | December - Annual Holiday Party | December - Tenured Member Event | January - Four Day Weekend Event | April - Chapter Retreat | May - Concert at the Arboretum`
+- **`please_rate_your_overall_eo_dallas_experience`** — _Please Rate Your Overall EO Dallas Experience_  (enumeration/radio) — options: `Excellent | Good | Average | Fair | Poor`
+- **`please_select_any___all_reasons_you_are_not_choosing_to_renew_your_membership`** — _Please Select Any & All Reasons You Are Not Choosing to Renew Your Membership_  (enumeration/checkbox) — options: `Not Aligned with Chapter Leadership & Direction | Quality of EO Dallas Events | Forum Experience | New Member Onboarding Experience | Cost of Dues | Business Performance | Dissatisfied with EO Benefits | Receiving More Value Elsewhere | Personal Reasons (Unrelated to EO) | Other`
+- **`please_share_any_other_reasons_for_not_renewing_below_`** — _Please Share Any Other Reasons for Not Renewing Below:_  (string/textarea)
+- **`referral_source`** — _Referral Source_  (string/text)
+- **`sap_active_`** — _SAP Active?_  (enumeration/select) — options: `Yes | No | On Hold`
+  - Is the SAP in a current agreement?
+- **`sap_tier`** — _SAP Tier_  (number/number)
+  - Value of annual agreement
+- **`what__if_any__changes_within_eo_dallas_would_lead_you_to_consider_rejoining_`** — _What (if Any) Changes Within EO Dallas Would Lead You to Consider Rejoining?_  (string/textarea)
+- **`when_did_you_make_your_decision_not_to_renew_with_eo_dallas_`** — _When Did You Make Your Decision Not to Renew with EO Dallas?_  (enumeration/radio) — options: `Prior to the '24-'25 Fiscal Year | During Q1 or Q2 of the '24-'25 Fiscal Year | During Q3 or Q4 of the '24-'25 Fiscal Year | When Renewal Outreach Began | Other`
+- **`where_did_you_get_the_most_value_out_of_eo_dallas__the_least_`** — _Where Did You Get the Most Value Out of EO Dallas? The Least?_  (string/textarea)
+- **`who_did_you_first_notify_regarding_your_renewal_decision_`** — _Who Did You First Notify Regarding Your Renewal Decision?_  (enumeration/radio) — options: `Forum Moderator | Forum Chair | Executive Director | Chapter President | Chapter Board Member | Other`
+- **`why_have_you_decided_to_leave_eo_dallas_`** — _Why Have You Decided to Leave EO Dallas?_  (enumeration/radio) — options: `Financial Reasons | Learning Events Did Not Resonate / Provide Value | Forum Placement Delays / Issues | Sold Business / No Longer Qualify | Negative Forum Experience | Time Constraints | Personal Obligations | Moving / Moved | Joining Another Organization | Other`
+
+## contactinformation  (189)
+
+- **`accel__grad`** — _Accel. Grad_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`affiliation`** — _Affiliation_  (enumeration/select) — 14 options
+- **`airline`** — _Airline_  (string/text)
+- **`all_about_you`** — _All About You_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`anecdotal_financial_notes`** — _Anecdotal Financial Notes_  (string/textarea)
+- **`annual_revenue_number`** — _Annual Revenue Number_  (number/number)
+- **`annual_revenue_range`** — _Annual Revenue Range_  (enumeration/select) — options: `Less than 1,000,000 | 1,000,000 - 5,000,000 | 5,000,000 - 10,000,000 | 10,000,000 - 50,000,000 | 50,000,000 - 100,000,000 | 100,000,000+`
+- **`any_additional_comments_regarding_the_sessions_or_overall_learning_program_`** — _Any Additional Comments Regarding the Sessions or Overall Learning Program?_  (string/textarea)
+- **`any_additional_details_`** — _Any Additional Details?_  (string/text)
+- **`application`** — _Application_  (enumeration/select) — options: `Complete | Partial | Incomplete`
+- **`are_you_committed_to_meeting_with_your_mentor_for_at_least_1_3_hours_per_month_for_the_duration_of_`** — _Are you committed to meeting with your mentor for at least 1-3 hours per month for the duration of the 12-month program?_  (string/textarea)
+- **`arrival_date___time`** — _Arrival Date & Time_  (string/text)
+- **`arrival_flight_number`** — _Arrival Flight Number_  (string/text)
+- **`birthday`** — _Birthday_  (date/date)
+- **`bod_position`** — _BOD Position_  (enumeration/checkbox) — 26 options
+- **`business_email`** — _Business Email_  (string/text)
+- **`can_we_share_with_the_contact_that_you_referred_us_`** — _Can we share with the contact that you referred us?_  (enumeration/radio) — options: `Yes | No`
+- **`chapter`** — _Chapter_  (string/text)
+- **`chapter_check`** — _Chapter Check_  (enumeration/select) — options: `Yes | No`
+- **`chapter_consideration_email`** — _Chapter Consideration Email_  (enumeration/select) — options: `Sent | Approved`
+- **`company_role`** — _Company Role_  (string/text)
+- **`company_role_survey`** — _Company Role Survey_  (enumeration/select) — options: `Founder | Co-Founder | Controlling Shareholder | Managing Partner | CEO | COO | Other`
+- **`contact_email`** — _Contact Email_  (string/text)
+- **`contact_info`** — _Contact Info_  (string/text)
+- **`contact_phone`** — _Contact Phone_  (string/text)
+- **`cpa_verification`** — _CPA Verification_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`current_mod`** — _Current Mod_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`current_moderator`** — _Current Moderator_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`dallas_bod`** — _Dallas BOD_  (enumeration/checkbox) — options: `2025-2026 | 2024-2025 | 2023-2024 | 2022-2023`
+  - EO Dallas Board of Directors
+- **`date_for_your_meeting`** — _Date for Your Meeting_  (date/date)
+- **`date_forum_trained`** — _Date Forum Trained_  (date/date)
+- **`day_of_the_week_preference`** — _Day of the Week Preference_  (enumeration/select) — options: `Monday | Tuesday | Wednesday | Thursday | Friday`
+- **`demographics`** — _Demographics_  (enumeration/select) — options: `Male | Female`
+- **`departure_date___time`** — _Departure Date & Time_  (string/text)
+- **`departure_flight_number`** — _Departure Flight Number_  (string/text)
+- **`describe_your_current_strengths_and_weaknesses_in_your_business_`** — _Describe your current strengths and weaknesses in your business._  (string/textarea)
+- **`dietary_restrictions`** — _Dietary Restrictions_  (string/text)
+- **`dietary_restrictions___preferences`** — _Dietary Restrictions & Preferences_  (enumeration/checkbox) — options: `Vegetarian | Vegan | Gluten-Free | Dairy-Free | Nut Allergy | No Restrictions | Other`
+- **`do_you_currently_attend_eo_dallas_learning_events_`** — _Do you currently attend EO Dallas Learning events?_  (enumeration/radio) — options: `Yes, Regularly | Occasionally | No`
+- **`do_you_prefer_the_predictability_of_set_venues_or_a_variety_of_new_venues_`** — _Do You Prefer the Predictability of Set Venues or a Variety of New Venues?_  (enumeration/radio) — options: `Predictability of Set Venues | More Venue Variety | Happy Either Way`
+- **`emails_of_those_who_should_be_notified_of_your_reservation`** — _Emails of Those Who Should Be Notified of Your Reservation_  (string/textarea)
+- **`eo_accelerator`** — _EO Accelerator_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`eo_forum_experience_rating`** — _EO Forum Experience Rating_  (enumeration/select) — options: `1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10`
+- **`eo_forum_experience_reason`** — _EO Forum Experience Reason_  (string/textarea)
+- **`equity_ownership`** — _Equity Ownership_  (number/number)
+- **`financials_are_verifiable`** — _Financials are Verifiable_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`fmr__board`** — _Fmr. Board_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`fmr__mod`** — _Fmr. Mod_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`food_preference___allergy_explanation`** — _Food Preference / Allergy Explanation_  (string/textarea)
+- **`forum`** — _Forum_  (enumeration/select) — 32 options
+- **`forum_info`** — _Forum Info_  (string/text)
+- **`forum_moderator`** — _Forum Moderator_  (string/text)
+- **`forum_name`** — _Forum Name_  (string/text)
+- **`forum_trained`** — _Forum Trained_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`full_name`** — _Full Name_  (string/text)
+- **`gsea_name`** — _GSEA Name_  (string/text)
+- **`gsea_participation`** — _GSEA Participation_  (enumeration/checkbox) — options: `I want to be a judge! | I want to make a monetary contribution!  | I want to make an in kind donation! | I want to recommend an entrepreneur student! | I want to attend! | I have another idea to get involved! `
+  - Ways to get involved with the GSEA program.
+- **`guest_name`** — _Guest Name_  (string/text)
+- **`home_gift_sent`** — _Home Gift Sent_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`how_did_you_hear_about_us_`** — _How did you hear about us?_  (enumeration/select) — options: `Social Media | Word of Mouth | Internet Search`
+- **`how_do_you_plan_to_apply_what_you_learn_from_your_mentor_`** — _How do you plan to apply what you learn from your mentor?_  (string/textarea)
+- **`how_far_in_advance_in_ideal_for_knowing_our_yearly_learning_calendar_`** — _How Far in Advance in Ideal for Knowing Our Yearly Learning Calendar?_  (enumeration/radio) — options: `A Month Early | A Quarter Early | A Year Early | As Early as Possible | Indifferent / Not Important to You`
+- **`how_many_can_you_accommodate_`** — _How many can you accommodate?_  (number/number)
+  - How many can you accommodate?
+- **`how_would_you_like_to_participate_in_gsea_2025_`** — _How would you like to participate in GSEA 2025?_  (enumeration/checkbox) — options: `I'd like to be a judge for the competition! | My forum will help a student work on their pitch.`
+- **`how_would_you_like_to_stay_involved_with_eo_dallas_`** — _How Would You Like To Stay Involved With EO Dallas?_  (enumeration/checkbox) — options: `Accelerator Coach | Mentor for Members & Accelerators | Participate in Alumni Events | Host Alumni Events | Alumni-Focused Podcast Opportunities | I'd Like To Rejoin The Chapter | I'm Interested In Becoming An SAP | I Have No Interest In EO Dallas At This Time | Other`
+  - Check all that apply...
+- **`i_am_available_the_following_months`** — _I am available the following months_  (enumeration/checkbox) — options: `January | February | March | April | May | June | July | August | September | October | November | December`
+  - I am available the following months
+- **`i_am_self_nominating`** — _I am self nominating_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`i_intend_to_bring_my_spouse_or_life_partner_as_well__please_send_me_a_payment_link_for_them_`** — _I intend to bring my spouse or life partner as well. Please send me a payment link for them!_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`i_ll_be_there_`** — _I'll be there!_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`i_m_potentially_interested_in_the_following_roles___`** — _I'm potentially interested in the following roles..._  (enumeration/checkbox) — 15 options
+- **`i_ve_already_purchased_a_2025_xcentric_ticket_and_would_like_to_be_reimbursed_the_difference_in_pri`** — _I've already purchased a 2025 XCentric ticket and would like to be reimbursed the difference in price._  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`if_you_are_nominating_another_member__please_share_their_name__email__and_phone_below_so_we_can_rea`** — _If you are nominating another member, please share their name, email, and phone below so we can reach out to gauge their interest in joining the board._  (string/textarea)
+- **`if_you_chose_other__what_best_describes_your_expertise_`** — _If you chose other, what best describes your expertise?_  (string/text)
+- **`if_you_chose_other__what_best_describes_your_industries_of_interest_`** — _If you chose other, what best describes your industries of interest?_  (string/text)
+- **`if_you_could_summarize_your_eo_dallas_experience_in_one_would__what_would_it_be_`** — _If You Could Summarize Your EO Dallas Experience in One Would, What Would it Be?_  (string/text)
+- **`if_you_responded__other__let_us_know_what_events_are_most_likely_to_get_you_attention_`** — _If you responded "other" let us know what events are most likely to get you attention._  (string/textarea)
+- **`in_your_own_words__what_value_can_eo_dallas_provide_to_you_as_an_elumni_of_our_chapter__now__and_in`** — _In your own words: What value can EO Dallas provide to you as an elumni of our chapter, now, and in the future?_  (string/textarea)
+- **`incoming_forum_moderator_elect_name___email`** — _Incoming Forum Moderator-Elect Name & Email_  (string/text)
+- **`integration_complete`** — _Integration Complete_  (enumeration/select) — options: `Yes | No | N/A`
+- **`integration_follow_up`** — _Integration Follow-up_  (enumeration/select) — options: `Scheduled | Declined`
+- **`integration_info`** — _Integration Info_  (string/text)
+- **`integration_meeting`** — _Integration Meeting_  (date/date)
+- **`integrator`** — _Integrator_  (string/text)
+- **`interested_in_slp_forum`** — _Interested in SLP Forum_  (enumeration/select) — options: `Yes | No | Maybe`
+- **`interested_in_spousal_forum`** — _Interested in Spousal Forum_  (enumeration/select) — options: `Yes | No | N/A`
+- **`is_there_any_specific_mentor_you_would_prefer_or_recommend_`** — _Is there any specific mentor you would prefer or recommend?_  (string/text)
+- **`join_date`** — _Date Joined_  (date/date)
+- **`key_contact_name_at_referred_company`** — _Key Contact Name at Referred Company_  (string/text)
+- **`lead_source`** — _Lead Source_  (enumeration/checkbox) — options: `Global Website / Application | EO Dallas Website | EO Dallas Social Media | Member Referral | SAP Referral | Other`
+- **`list_of_saps_that_are_interesting`** — _List of SAPs that are interesting_  (string/textarea)
+- **`lunch___learn_date`** — _Lunch & Learn Date_  (date/date)
+  - Lunch & Learn Date
+- **`lunch_and_learn_presentation_topic`** — _Lunch and Learn Presentation Topic_  (string/text)
+  - Lunch and Learn Presentation Topic
+- **`lunch_and_learn_time`** — _Lunch and Learn Time_  (string/text)
+  - Lunch and Learn Time
+- **`meeting_room_size`** — _Meeting Room Need_  (enumeration/radio) — options: `Small - 2-5 People | Medium - 6-12 People | Large - 13-20 People | Training Room - Up to 24 people | Podcast Space | Video Recording Space`
+- **`meeting_title`** — _Meeting Title_  (string/text)
+- **`member_status`** — _Member Status_  (enumeration/radio) — options: `Elumni`
+- **`membership_info`** — _Membership Info_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`mentor`** — _Mentorship Status_  (enumeration/select) — options: `Never Contacted | Interested | Needs to Be Assigned | Open to Mentorship | Matched / Active 2025 | Matched / Active 2026 | Matched / Active 2027 | Closed / Not Available | Not Interested`
+- **`mod_trained`** — _Mod Trained_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`moderator_elect`** — _Moderator Elect_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`n2022_revenue`** — _2022 Revenue_  (number/number)
+- **`n2023_leaning_event`** — _2023 Learning Event_  (enumeration/checkbox) — options: `August - Eric Maddox Learning Event | September - Anurag Jain Learning Event | October - Nando Parrado Learning Event | November - John Sanei Learning Event | January - GSEA Event | January - Kristina Wandzilak & Constance Curry Learning Event | February - Breakfast with a Legend | February - Sandra Joseph Learning Event | March - Daryl Davis Learning Event | May - Jeremy Poincenot Learning Event`
+- **`n2023_revenue`** — _2023 Revenue_  (number/number)
+- **`n2023_social_event`** — _2023 Social Event_  (enumeration/checkbox) — 15 options
+- **`n25_26_learning_event`** — _25-26 Learning Event_  (enumeration/checkbox) — options: `September - Danny Southwick | October - Rashmi Airan | November - Fort Worth EMP | November - John Wayne Walding | November - Vision to Velocity | January - Alison Canavan | February - Kyle Scheele | February - BWAC | March - Gregory Offner | May - Jay Baer`
+- **`n25_26_social_event`** — _25-26 Social Event_  (enumeration/checkbox) — options: `August - Wine & Wheels | September - Salsa the Night Away | October - Putt-Putt | December - Holiday Fun | January - 4 Day Weekend | March - Powerhouse Watch Party | April - Meow Wolf`
+- **`name___gsea`** — _Name - GSEA_  (string/text)
+- **`names_of_all_forum_members`** — _Names of All Forum Members_  (string/textarea)
+- **`navigator`** — _Assigned Navigator_  (string/text)
+- **`new_member_gift`** — _New Member Gift_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`nominating_for_the_following_role_s_`** — _Nominating for the Following Role(s)_  (enumeration/checkbox) — options: `President-Elect | Finance Chair | Governance Chair | Learning Chair | Forum Chair | Strategic Alliance Partnership Chair | Communications / MarComms Chair | Social & MyEO Chair | Member Engagement Chair | Spouse & Life Partner Chair`
+- **`nominee_lunch`** — _Nominee Lunch_  (enumeration/select) — options: `Attended | RSVP`
+- **`number_of_contract_employees`** — _Number of Contract Employees_  (enumeration/select) — options: `1-5 | 5-25 | 25-50 | 50-100 | 100-500 | 500-1000 | 1000+`
+- **`number_of_years_in_eo`** — _Number of Years in EO_  (string/text)
+- **`optional__if_known__day___week_of_your_monthly_forum_meetings`** — _(Optional) If Known, Day & Week of Your Monthly Forum Meetings_  (string/textarea)
+- **`optional__is_there_anything_else_you_d_like_us_to_know_in_regards_to_your_eo_experience__or_expecta`** — _OPTIONAL: Is there anything else you'd like us to know in regards to your EO experience, or expectations moving forward?_  (string/textarea)
+- **`optional__tell_us_more_about_your_background_and_entrepreneurial_journey___`** — _(OPTIONAL) Tell us more about your background and entrepreneurial journey..._  (string/textarea)
+- **`optional__why_are_you_nominating_them_for_this_honor_`** — _OPTIONAL: Why Are You Nominating Them For This Honor?_  (string/textarea)
+- **`overall_eo_experience_rating`** — _Overall EO Experience Rating_  (enumeration/select) — options: `1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10`
+- **`overall_eo_experience_reason`** — _Overall EO Experience Reason_  (string/textarea)
+- **`paid_strategic_alliance_partners`** — _Paid Strategic Alliance Partners_  (enumeration/checkbox) — options: `Shane Spillers - EOS | Burt Copeland - New Life CFO | Kyle Ferguson - FBFK Law | Tyler Pope - Texas Security Bank | Brian Parsons - Mejeticks | Brenda Blake - Saville CPA | Ryan Hill - Whitley Penn | Martha Reynolds - My People Person | Pedro Gonzalez - New York Life | Pedro Barboglio - Remote Team Solutions | Tim Conkle - The 20 MSP | Jennifer Schmall - American Express`
+- **`past_president`** — _Past President_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`please_provide_any_additional_information_that_you_believe_is_important_for_us_to_know_in_matching_`** — _Please provide any additional information that you believe is important for us to know in matching you with a mentor._  (string/textarea)
+- **`please_upload_your_current_forum_constitution`** — _Please Upload Your Current Forum Constitution_  (string/file)
+- **`preference__week_of_the_month`** — _Preference: Week of the Month_  (string/text)
+- **`preferred_week_of_the_month`** — _Preferred Week of the Month_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`recommend_eo_to_a_friend`** — _Recommend EO to a Friend_  (enumeration/select) — options: `1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10`
+- **`recommendations_for_strategic_alliance_partners`** — _Recommendations for Strategic Alliance Partners_  (string/text)
+- **`referral_s_email`** — _Referral's Email_  (string/text)
+- **`referral_s_first_name`** — _Referral's First Name_  (string/text)
+- **`referral_s_last_name`** — _Referral's Last Name_  (string/text)
+- **`reflect_on_a_challenging_moment_in_your_life_where_the_outcome_was_positively_influenced_by_someone`** — _Reflect on a challenging moment in your life where the outcome was positively influenced by someone or something within EO. Can you share that story and explain the role EO played in it?_  (string/textarea)
+- **`renewal_status`** — _Renewal Status_  (enumeration/select) — options: `💚 Confirmed Renew | 💛 Leaning Renew | ♥️ At Risk | 🖤 Likely Non-Renew`
+- **`role`** — _Role_  (enumeration/checkbox) — 39 options
+- **`sanctuary_dinner`** — _Sanctuary Dinner_  (enumeration/select) — options: `Invited | Attended | Accepted | Declined`
+- **`sanctuary_dinner_date`** — _Sanctuary Dinner Date_  (date/date)
+- **`sap_forum_presentation_topics`** — _SAP Forum Presentation Topics_  (string/textarea)
+- **`sap_type`** — _SAP Type_  (enumeration/checkbox) — options: `In-Kind | Commission | Paid`
+- **`school_type`** — _School Type_  (enumeration/booleancheckbox) — options: `College | Competition`
+- **`sex`** — _Sex_  (enumeration/select) — options: `Male | Female`
+- **`share_your_eo_experience`** — _Share your EO Experience_  (string/textarea)
+- **`signature_verification`** — _Signature Verification_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`site_visit`** — _Site Visit_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`spousal_email_address`** — _Spousal Email Address_  (string/text)
+- **`spouse_first_name`** — _Spouse First Name_  (string/text)
+- **`spouse_info`** — _Spouse Info_  (string/text)
+- **`spouse_last_name`** — _Spouse Last Name_  (string/text)
+- **`spouse_life_partner`** — _Spouse/Life Partner_  (string/text)
+- **`spouse_phone`** — _Spouse Phone_  (string/text)
+- **`spouse_s_full_name`** — _Spouse's Full Name_  (string/text)
+- **`suggested_social_events`** — _Suggested Social Events_  (string/textarea)
+- **`time_for_your_meeting`** — _Time for Your Meeting_  (string/text)
+- **`today_s_date`** — _Today's Date_  (date/date)
+- **`top_committees_interested_in_joining`** — _Top Committees Interested in Joining_  (enumeration/checkbox) — options: `Finance | Membership | Forum | Learning | Social & MyEO | Strategic Alliance Partnerships | Communications | MyEO | Mentorship | Engagement | GSEA | Spousal/Life Partners`
+- **`transfer_member_`** — _Transfer Member?_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`vegetarian_preferences`** — _Vegetarian Preferences_  (string/text)
+- **`venture_x_location`** — _Venture X Location_  (enumeration/radio) — options: `Galleria Location | Allen Location`
+- **`week_of_the_month_preference`** — _Week of the Month Preference_  (enumeration/select) — options: `Week 1 | Week 2 | Week 3 | Week 4`
+- **`what_are_you_areas_of_expertise_`** — _What are you areas of expertise?_  (enumeration/checkbox) — options: `Artificial Intelligence | Leadership & Team Building | Sales & Revenue Generation | Operational Excellence | Marketing & Customer Acquisition | Branding Strategy | Exit Strategies & Planning | Personal Development & Resilience | Risk Management & Crisis Navigation | Other`
+- **`what_are_you_referring_them_to_eo_dallas_for_`** — _What Are You Referring Them To EO Dallas For?_  (enumeration/checkbox) — options: `EO Membership | EO Accelerator Membership | EO Sponsorship / Partnership | EO Elumni Program`
+- **`what_are_your_primary_objectives_for_participating_in_the_mentorship_program_`** — _What are your primary objectives for participating in the mentorship program?_  (string/textarea)
+- **`what_can_we_help_you_with_`** — _What can we help you with?_  (enumeration/select) — options: `Membership | Partnership`
+- **`what_industries_are_you_passionate_about_`** — _What industries are you passionate about?_  (enumeration/checkbox) — options: `AI & Automation | Real Estate & Property Management | Cybersecurity & Data Protection | Renewable Energy & Sustainability | Health & Biotechnology | E-Commerce & Online Markets | Banking & Finance | Legal & Compliance | Manufacturing | Other`
+- **`what_industries_or_topics_are_you_most_passionate_about_`** — _What Industries or Topics Are You Most Passionate About?_  (string/textarea)
+- **`what_is_the_one_thing_about_eo_that_has_kept_you_renewing_your_membership_up_to_this_point__and__if`** — _What is the one thing about EO that has kept you renewing your membership up to this point? And, if applicable, what is the one thing that would make you want to renew year after year without hesitation?_  (string/textarea)
+- **`what_is_your_preferred_day_of_the_week_for_learning_events_`** — _What is your preferred day of the week for Learning events?_  (enumeration/checkbox) — options: `Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday`
+- **`what_is_your_preferred_time_for_eo_dallas_learning_events_`** — _What is your preferred time for EO Dallas Learning events?_  (enumeration/checkbox) — options: `Morning | Afternoon | Evening`
+- **`what_is_your_second_favorite_topic_of_interest_in_the_list_below_`** — _What Is Your Second Favorite Topic of Interest in the List Below?_  (enumeration/radio) — options: `Business Topics | Motivational / Inspirational | Family Events / Events with Children Included | Parenting Topics | Panel of Speakers Who Highlight their EO Experience`
+- **`what_is_your_thid_favorite_topic_of_interest_in_the_list_below_`** — _What Is Your Thid Favorite Topic of Interest in the List Below?_  (enumeration/radio) — options: `Business Topics | Motivational / Inspirational | Family Events / Events with Children Included | Parenting Topics | Panel of Speakers Who Highlight their EO Experience`
+- **`what_is_your_top_topic_of_interest_in_the_list_below_`** — _What Is Your Top Topic of Interest in the List Below?_  (enumeration/radio) — options: `Business Topics | Motivational / Inspirational | Family Events / Events with Children Included | Parenting Topics | Panel of Speakers Who Highlight their EO Experience`
+- **`what_portion_of_the_event_will_you_be_attending_`** — _What Portion of the Event Will You Be Attending?_  (enumeration/radio) — options: `The Full Day | Just the Test Drive Beginning at 12:30 | Just the Morning + Test Drive | Just the Test Drive + Afternoon`
+- **`what_qualities_or_experiences_are_you_looking_for_in_a_mentor_`** — _What qualities or experiences are you looking for in a mentor?_  (string/textarea)
+- **`what_skills_or_knowledge_are_you_hoping_to_gain_from_your_mentor_`** — _What skills or knowledge are you hoping to gain from your mentor?_  (string/textarea)
+- **`what_specific_areas_of_personal_or_professional_growth_do_you_wish_to_focus_on_during_this_mentorsh`** — _What specific areas of personal or professional growth do you wish to focus on during this mentorship?_  (string/textarea)
+- **`what_specific_questions___factors_would_most_influence_your_decision_regarding_the_previous_two_que`** — _What specific questions / factors would most influence your decision regarding the previous two questions?_  (enumeration/checkbox) — options: `Cost | Benefits / Value Proposition | Time Commitment | Type of Events / Programming | EO Events Outside Our Chapter (e.g. Regional / Global) | None of the Above`
+- **`what_types_of_events_most_interest_`** — _What types of events most interest you?_  (enumeration/checkbox) — options: `Small Gatherings of Elumni | Gatherings of Elumni + Tenured Members | EO Dallas Learning Events | EO Dallas Social Events | Travel / Retreats with Fellow Entrepreneurs | Other`
+- **`what_types_of_events_most_interest_you_`** — _What Types of Events Most Interest You?_  (enumeration/radio) — options: `Small Gatherings of Elumni | Gatherings of Elumni + Tenured Members | EO Dallas Learning Events | EO Dallas Social Events | Travel / Retreats with Fellow Entrepreneurs | Other`
+- **`what_would_excite_you_most_about_re_engaging_with_the_eo_dallas_community_`** — _What would excite you most about re-engaging with the EO Dallas community?_  (enumeration/checkbox) — options: `Reconnecting with Old Friends | Mentorship Opportunities | Events | Engagement | Philanthropy`
+- **`which_date_works_best_for_you_`** — _Which Date Works Best For You?_  (enumeration/radio) — options: `May 20th | May 21st | Either | Neither`
+- **`who_are_you_nominating_for_the_bobby_blanchard_award_`** — _Who Are You Nominating For The Bobby Blanchard Award?_  (string/text)
+- **`who_in_eo_has_truly__seen__you_for_who_you_are__how_has_their_recognition_impacted_your_life_`** — _Who in EO has truly "seen" you for who you are? How has their recognition impacted your life?_  (string/textarea)
+- **`will_you_be_able_to_join_us_on_the_rescheduled_date_`** — _Will you be able to join us on the rescheduled date?_  (enumeration/radio) — options: `Yes | No`
+- **`will_you_be_joining_us_on_march_7th_`** — _Will you be joining us on March 7th?_  (enumeration/checkbox) — options: `Yes. I will attend the Test Drive. | Yes. I will attend the Test Drive & "Behind the Music" Event | No. But, please keep me informed of other EO opportunities. | No. I am not interested in EO at this time.`
+- **`will_you_provide_lunch_`** — _Will you provide lunch?_  (enumeration/radio) — options: `Yes | No`
+  - Will you provide lunch?
+- **`willing_to_engage_serve`** — _Willing to Engage/Serve_  (enumeration/checkbox) — options: `Mentor an EO member or accelerator | Navigate a new member | Seed moderate a new forum | Host forum / board meetings at your office | Join a committee - see options below | Serve as an accelerator accountability coach`
+- **`willing_to_navigate`** — _Willing to Navigate_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`willing_to_seed_`** — _Willing to Seed?_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`would_you_be_interested_in_a_paid_eo_dallas_elumni_program_`** — _Would you be interested in a paid EO Dallas Elumni Program?_  (enumeration/radio) — options: `Yes | No | Possibly`
+- **`would_you_be_interested_in_potentially_rejoining_eo_dallas_as_a_member_`** — _Would you be interested in potentially rejoining EO Dallas as a member?_  (enumeration/radio) — options: `Yes | No | Possibly`
+
+## conversioninformation  (1)
+
+- **`if_you_chose__other__what_ideas_do_you_have_for_how_you_d_like_to_be_involved_with_eo_dallas_`** — _If you chose "other" what ideas do you have for how you'd like to be involved with EO Dallas?_  (string/textarea)
+
+## requalification_properties  (21)
+
+- **`accountant_name`** — _Accountant Name_  (string/text)
+- **`accountant_s_email_address`** — _Accountant's Email Address_  (string/text)
+- **`accountant_s_phone_number`** — _Accountant's Phone Number_  (string/text)
+- **`accounting_company_full_address`** — _Accounting Company Full Address_  (string/text)
+- **`accounting_company_name`** — _Accounting Company Name_  (string/text)
+- **`add_another_company`** — _Add Another Company_  (enumeration/booleancheckbox) — options: `Yes | No`
+- **`company_1_annual_revenue`** — _Company 1 Annual Revenue_  (number/number)
+- **`company_1_client_ownership_percentage`** — _Company 1 Client Ownership Percentage_  (number/number)
+- **`company_1_dba`** — _Company 1 DBA_  (string/text)
+- **`company_1_number_of_full_time_employees`** — _Company 1 Number of Full Time Employees_  (number/number)
+- **`company_1_revenue_is_for_the_year_ending`** — _Company 1 Revenue is for the Year Ending_  (number/number)
+- **`company_2_annual_revenue`** — _Company 2 Annual Revenue_  (number/number)
+- **`company_2_client_ownership_percentage`** — _Company 2 Client Ownership Percentage_  (number/number)
+- **`company_2_dba`** — _Company 2 DBA_  (string/text)
+- **`company_2_number_of_full_time_employees`** — _Company 2 Number of Full Time Employees_  (number/number)
+- **`company_2_revenue_is_for_the_year_ending`** — _Company 2 Revenue is for the Year Ending_  (number/number)
+- **`company_3_annual_revenue`** — _Company 3 Annual Revenue_  (number/number)
+- **`company_3_client_ownership_percentage`** — _Company 3 Client Ownership Percentage_  (number/number)
+- **`company_3_dba`** — _Company 3 DBA_  (string/text)
+- **`company_3_number_of_full_time_employees`** — _Company 3 Number of Full Time Employees_  (number/number)
+- **`company_3_revenue_is_for_the_year_ending`** — _Company 3 Revenue is for the Year Ending_  (number/number)
+
