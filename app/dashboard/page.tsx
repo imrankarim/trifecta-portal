@@ -11,16 +11,13 @@ const TIER_STYLES: Record<string, string> = {
   Monitor: "bg-gray-100 text-gray-700 ring-gray-200",
 };
 
-// Lifecycle values that count as "currently a member" — distinct from Prospect
-// (pre-member) and Former Member (post-member).
-const CURRENT_MEMBER_STATUSES = new Set([
-  "Active",
-  "On Leave",
-  "Grace Period",
-  "Lapsed",
-]);
+// Active-membership lifecycle values for the "Members" tab. On Leave is split
+// into its own tab — those members are knowingly absent (sabbatical, up to
+// 2 years) and aren't actively engaged, so mixing them with active dues-payers
+// muddied the view.
+const ACTIVE_MEMBER_STATUSES = new Set(["Active", "Grace Period", "Lapsed"]);
 
-type TabKey = "members" | "prospects" | "sponsors" | "former";
+type TabKey = "members" | "on_leave" | "prospects" | "sponsors" | "former";
 
 interface TabDef {
   key: TabKey;
@@ -36,10 +33,17 @@ const TABS: TabDef[] = [
   {
     key: "members",
     label: "Members",
-    description: "Current EO members — Active, On Leave, Grace Period, Lapsed",
+    description: "Active dues-paying members — Active, Grace Period, Lapsed",
     predicate: (m) =>
-      m.contact_type === "Member" && CURRENT_MEMBER_STATUSES.has(m.membership_status ?? ""),
+      m.contact_type === "Member" && ACTIVE_MEMBER_STATUSES.has(m.membership_status ?? ""),
     showScoring: true,
+  },
+  {
+    key: "on_leave",
+    label: "On Leave",
+    description: "Members on sabbatical (up to 2 years) — not currently engaged but still members",
+    predicate: (m) => m.contact_type === "Member" && m.membership_status === "On Leave",
+    showScoring: false, // we deliberately don't score On Leave members
   },
   {
     key: "prospects",
@@ -106,6 +110,7 @@ export default async function DashboardPage({
   const allMembers = members ?? [];
   const counts: Record<TabKey, number> = {
     members: 0,
+    on_leave: 0,
     prospects: 0,
     sponsors: 0,
     former: 0,
