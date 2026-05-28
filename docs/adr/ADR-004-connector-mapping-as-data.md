@@ -103,7 +103,7 @@ The JSONB shape stored on `chapters.data_sources_config[source_name]`:
         "target": "members.renewal_intent_response",
         "transform": "enum_map_after_strip",
         "transform_args": {
-          "strip_pattern": "[💚💛♥️🖤\\s]+",
+          "strip_pattern": "^[\\p{Emoji}\\p{Emoji_Component}\\s]+",
           "value_map": {
             "Confirmed Renew": "PlanToRenew",
             "Leaning Renew": "PlanToRenew",
