@@ -53,13 +53,14 @@ const SCORING_SELECT =
   "slp_engagement_status, whatsapp_activity_level, " +
   "global_event_count_24m, days_since_last_engagement, " +
   "forum_last_attended_date, local_event_last_attended_date, global_event_last_attended_date, " +
-  "engagement_score_current, custom_fields";
+  "engagement_score_current, churn_risk_tier, custom_fields";
 
 interface MemberRow extends MemberForScoring {
   trifecta_member_id: string;
   first_name: string | null;
   last_name: string | null;
   engagement_score_current: number | null;
+  churn_risk_tier: string | null;
 }
 
 export async function scoreMembers(opts: ScoreMembersOptions): Promise<ScoreMembersResult> {
@@ -97,9 +98,23 @@ export async function scoreMembers(opts: ScoreMembersOptions): Promise<ScoreMemb
     const scoresEmitted: number[] = [];
 
     for (const m of rows) {
-      // Only Members get a score (per ADR-005)
-      if (m.contact_type !== "Member") {
+      // Only Members get a score (per ADR-005). On Leave is a known,
+      // expected absence (up to 2 years per EO rules) — they're still
+      // members but shouldn't appear in the at-risk digest. Skip scoring
+      // them and clear any stale churn_risk_tier from when they were Active.
+      const isNonScoredMember =
+        m.contact_type === "Member" && m.membership_status === "On Leave";
+      if (m.contact_type !== "Member" || isNonScoredMember) {
         result.membersSkipped++;
+        if (isNonScoredMember && m.churn_risk_tier != null && !opts.dryRun) {
+          await opts.supabase
+            .from("members")
+            .update({
+              churn_risk_tier: null,
+              score_last_calculated_at: startedAt.toISOString(),
+            })
+            .eq("trifecta_member_id", m.trifecta_member_id);
+        }
         continue;
       }
 
