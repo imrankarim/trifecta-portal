@@ -68,12 +68,18 @@ export const EO_DALLAS_HUBSPOT_MAPPINGS: FieldMapping[] = [
           },
           emit: "Member",
         },
+        // Join-date signal → Member. EO Dallas's HubSpot leaves membership_status
+        // empty for everyone (verified empirically); having a join_date IS the
+        // chapter's tracking signal that someone became a member. This rule
+        // catches the ~80 members EO Global lists as active but our other
+        // signals missed (sanity check on 2026-05-29).
+        { condition: { field: "join_date", is_set: true }, emit: "Member" },
       ],
       // null → sync skips this contact (no signal of operational interest)
       default: null,
     },
     notes:
-      "ADR-005 signal-precedence. Sync layer skips contacts where this returns null (no operational signal).",
+      "ADR-005 signal-precedence. Sync layer skips contacts where this returns null (no operational signal). The join_date fallback rule was added after a cross-check against EO Global's authoritative active-member list revealed ~80 missing members; HubSpot has them with join_date set but no other signals.",
     authored_by: EO_DALLAS_HUBSPOT_AUTHORED_BY,
   },
 
