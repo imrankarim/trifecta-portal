@@ -19,7 +19,7 @@
 // Pure I/O orchestration — the mapping logic lives in applyMappings.ts.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { ConnectorRecord, SourceSchema } from "../connectors/types";
+import type { SourceSchema } from "../connectors/types";
 import type { DataSource } from "../connectors/DataSource";
 import type { FieldMapping } from "../connectors/mapping-schema";
 import {

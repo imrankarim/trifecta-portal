@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { applyMappings, mergeMappings, type WritePlan } from "./applyMappings";
+import { applyMappings, mergeMappings } from "./applyMappings";
 import type { FieldMapping } from "../connectors/mapping-schema";
 import type { ConnectorRecord } from "../connectors/types";
 
