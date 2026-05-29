@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NoteForm } from "./NoteForm";
 import { ActionForm } from "./ActionForm";
 import { ActionCheckbox } from "./ActionCheckbox";
+import { AssistantPanel } from "./AssistantPanel";
 
 const TIER_STYLES: Record<string, { bg: string; fg: string; ring: string }> = {
   Critical: { bg: "bg-red-50", fg: "text-red-700", ring: "ring-red-200" },
@@ -207,6 +208,9 @@ export default async function MemberDetailPage({
             )}
           </div>
         </section>
+
+        {/* AI assistant */}
+        <AssistantPanel memberId={params.id} />
 
         {/* Main grid */}
         <div className="grid lg:grid-cols-3 gap-6">
