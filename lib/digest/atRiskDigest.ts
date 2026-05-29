@@ -42,8 +42,12 @@ export interface DigestData {
   top_risk: Array<DigestMember & { reason: string }>;
   /** Chapter-level stats for context. */
   stats: {
-    total_members: number;          // contact_type='Member' only
-    scored_members: number;         // those with engagement_score_current set
+    /** Currently-active dues-paying members (membership_status='Active'). The headline number. */
+    active_members: number;
+    /** Members on sabbatical — informational, not at-risk. */
+    on_leave_members: number;
+    /** Members who have an engagement_score_current set (excluding On Leave + Former). */
+    scored_members: number;
     critical_count: number;
     high_count: number;
     medium_count: number;
@@ -127,10 +131,16 @@ export function buildReason(m: DigestMember): string {
 
 /**
  * Compute chapter-level stats from the full member list.
+ *
+ * IMPORTANT: counts only currently-active members + on-leave for the
+ * headline numbers. Former Members and Prospects are present in the
+ * Trifecta members table (for historical / pipeline reasons) but they
+ * shouldn't inflate the "total members" the board chair sees in the digest.
  */
 export function computeStats(allMembers: DigestMember[]): DigestData["stats"] {
   const stats: DigestData["stats"] = {
-    total_members: 0,
+    active_members: 0,
+    on_leave_members: 0,
     scored_members: 0,
     critical_count: 0,
     high_count: 0,
@@ -141,7 +151,10 @@ export function computeStats(allMembers: DigestMember[]): DigestData["stats"] {
   };
 
   for (const m of allMembers) {
-    stats.total_members++;
+    // Headline counts — only Active + On Leave count as "current" members.
+    if (m.membership_status === "Active") stats.active_members++;
+    else if (m.membership_status === "On Leave") stats.on_leave_members++;
+
     if (m.engagement_score_current != null) stats.scored_members++;
     switch (m.churn_risk_tier) {
       case "Critical":
@@ -179,74 +192,77 @@ export function computeStats(allMembers: DigestMember[]): DigestData["stats"] {
  */
 export function renderDigestHTML(data: DigestData): string {
   const titleDate = formatDate(data.generated_at);
+
+  // Email-safe layout: 600px max, table-based stat row (flexbox is unreliable
+  // in Outlook), single-column stack for at-risk members with reason as a
+  // sub-row underneath the name. Renders consistently across Gmail web/iOS,
+  // Apple Mail, Outlook desktop.
   const rows = data.top_risk
     .map(
       (m, i) => `
     <tr style="border-top: 1px solid #e5e7eb;">
-      <td style="padding: 12px 8px; font-weight: 600; color: #111827;">${i + 1}.</td>
-      <td style="padding: 12px 8px; color: #111827;">
-        ${escapeHtml(m.first_name)} ${escapeHtml(m.last_name)}<br/>
-        <span style="font-size: 12px; color: #6b7280;">${escapeHtml(m.company_name ?? "")}</span>
+      <td style="padding: 14px 20px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;">
+          <span style="color: #6b7280; font-variant-numeric: tabular-nums; font-size: 13px; min-width: 18px;">${i + 1}.</span>
+          <strong style="color: #111827; font-size: 15px;">${escapeHtml(m.first_name)} ${escapeHtml(m.last_name)}</strong>
+          ${tierBadge(m.churn_risk_tier)}
+          <span style="margin-left: auto; color: #111827; font-weight: 600; font-variant-numeric: tabular-nums; font-size: 15px;">${m.engagement_score_current ?? "—"}</span>
+        </div>
+        ${m.company_name ? `<div style="margin-left: 26px; margin-top: 2px; color: #6b7280; font-size: 13px;">${escapeHtml(m.company_name)}</div>` : ""}
+        <div style="margin-left: 26px; margin-top: 6px; color: #4b5563; font-size: 13px; font-style: italic;">${escapeHtml(m.reason)}</div>
       </td>
-      <td style="padding: 12px 8px;">${tierBadge(m.churn_risk_tier)}</td>
-      <td style="padding: 12px 8px; text-align: right; font-variant-numeric: tabular-nums; color: #111827; font-weight: 600;">${m.engagement_score_current ?? "—"}</td>
-      <td style="padding: 12px 8px; color: #6b7280; font-size: 14px;">${escapeHtml(m.reason)}</td>
     </tr>`,
     )
     .join("\n");
 
   const emptyState =
     data.top_risk.length === 0
-      ? `<p style="padding: 24px; text-align: center; color: #6b7280;">No at-risk members this week. 🎉</p>`
+      ? `<p style="padding: 32px 24px; text-align: center; color: #6b7280; font-size: 14px;">No at-risk members this week. 🎉</p>`
       : "";
 
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(data.chapter_name)} — Top At-Risk Members</title>
 </head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; margin: 0; padding: 24px;">
-  <div style="max-width: 720px; margin: 0 auto; background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
-    <div style="padding: 24px 24px 16px;">
-      <p style="margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280;">Weekly digest · ${titleDate}</p>
-      <h1 style="margin: 4px 0 0; font-size: 22px; color: #111827;">${escapeHtml(data.chapter_name)} — Top At-Risk Members</h1>
-    </div>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f4f5; margin: 0; padding: 24px 12px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="max-width: 600px; width: 100%; margin: 0 auto; background: white; border: 1px solid #e5e7eb; border-radius: 8px; border-collapse: separate; overflow: hidden;">
+    <tr>
+      <td style="padding: 24px 24px 12px;">
+        <p style="margin: 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; font-weight: 600;">Weekly digest · ${titleDate}</p>
+        <h1 style="margin: 6px 0 0; font-size: 20px; line-height: 1.3; color: #111827; font-weight: 700;">${escapeHtml(data.chapter_name)}</h1>
+        <p style="margin: 4px 0 0; color: #4b5563; font-size: 14px;">Top at-risk members this week</p>
+      </td>
+    </tr>
 
-    <div style="padding: 0 24px 16px; display: flex; gap: 16px; flex-wrap: wrap;">
-      ${statCard("Critical", data.stats.critical_count, "#dc2626")}
-      ${statCard("High", data.stats.high_count, "#ea580c")}
-      ${statCard("Medium", data.stats.medium_count, "#d97706")}
-      ${statCard("Newly at risk", data.stats.newly_at_risk_count, "#7c3aed")}
-      ${statCard("Total members", data.stats.total_members, "#111827")}
-    </div>
+    <tr>
+      <td style="padding: 12px 24px 20px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: separate; border-spacing: 8px 0;">
+          <tr>
+            ${statCell("At Risk", data.stats.critical_count + data.stats.high_count, "#dc2626")}
+            ${statCell("Newly at risk", data.stats.newly_at_risk_count, "#7c3aed")}
+            ${statCell("Active members", data.stats.active_members, "#111827")}
+          </tr>
+        </table>
+      </td>
+    </tr>
 
-    ${
-      data.top_risk.length > 0
-        ? `
-    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
-      <thead>
-        <tr style="background: #f9fafb; text-align: left;">
-          <th style="padding: 10px 8px; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">#</th>
-          <th style="padding: 10px 8px; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">Member</th>
-          <th style="padding: 10px 8px; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">Tier</th>
-          <th style="padding: 10px 8px; text-align: right; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">Score</th>
-          <th style="padding: 10px 8px; font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">Why flagged</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>`
-        : emptyState
-    }
+    <tr>
+      <td style="border-top: 1px solid #e5e7eb;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width: 100%; border-collapse: collapse;">
+          ${data.top_risk.length > 0 ? rows : `<tr><td>${emptyState}</td></tr>`}
+        </table>
+      </td>
+    </tr>
 
-    <div style="padding: 16px 24px; background: #f9fafb; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-      Scores updated ${formatDate(data.generated_at)}.
-      Trifecta generates this digest from chapter data including HubSpot, attendance records, and forum engagement.
-      Phase 1 confidence is limited — signals expand as Drive and meeting-note ingestion come online.
-    </div>
-  </div>
+    <tr>
+      <td style="padding: 16px 24px; background: #f9fafb; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; line-height: 1.5;">
+        Scores updated ${titleDate}. ${data.stats.scored_members} of ${data.stats.active_members + data.stats.on_leave_members} members carry an engagement signal — coverage grows as Drive and meeting-note ingestion come online.
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -255,12 +271,11 @@ export function renderDigestHTML(data: DigestData): string {
 // HTML helpers
 // ─────────────────────────────────────────────────────────────────────
 
-function statCard(label: string, value: number, color: string): string {
-  return `
-    <div style="flex: 1; min-width: 120px; padding: 12px; background: white; border: 1px solid #e5e7eb; border-radius: 6px;">
-      <div style="font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">${escapeHtml(label)}</div>
-      <div style="font-size: 24px; font-weight: 700; color: ${color}; margin-top: 4px;">${value}</div>
-    </div>`;
+function statCell(label: string, value: number, color: string): string {
+  return `<td style="width: 33.33%; padding: 12px; background: #fafafa; border: 1px solid #e5e7eb; border-radius: 6px; vertical-align: top;">
+      <div style="font-size: 10px; text-transform: uppercase; color: #6b7280; letter-spacing: 0.06em; font-weight: 600;">${escapeHtml(label)}</div>
+      <div style="font-size: 22px; font-weight: 700; color: ${color}; margin-top: 4px; line-height: 1.1;">${value}</div>
+    </td>`;
 }
 
 function tierBadge(tier: ChurnRiskTier | null): string {

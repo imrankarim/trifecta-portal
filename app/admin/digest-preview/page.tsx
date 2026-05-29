@@ -51,7 +51,7 @@ export default async function DigestPreviewPage() {
             <p className="text-xs uppercase tracking-wide text-gray-500">Admin</p>
             <h1 className="text-lg font-semibold text-gray-900">Digest preview · {chapter.chapter_name}</h1>
             <p className="text-xs text-gray-500 mt-0.5">
-              {digest.top_risk.length} at-risk · scored {digest.stats.scored_members} of {digest.stats.total_members} Members
+              {digest.top_risk.length} at-risk · scored {digest.stats.scored_members} of {digest.stats.active_members + digest.stats.on_leave_members} current members
             </p>
           </div>
           <Link

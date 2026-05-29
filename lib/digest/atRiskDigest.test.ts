@@ -129,7 +129,22 @@ describe("computeStats", () => {
     expect(stats.medium_count).toBe(1);
     expect(stats.low_count).toBe(1);
     expect(stats.monitor_count).toBe(1);
-    expect(stats.total_members).toBe(6);
+    // All 6 are Active (default in the helper), so active_members = 6.
+    expect(stats.active_members).toBe(6);
+    expect(stats.on_leave_members).toBe(0);
+  });
+
+  it("counts active_members and on_leave_members from membership_status", () => {
+    const members = [
+      member({ membership_status: "Active" }),
+      member({ membership_status: "Active" }),
+      member({ membership_status: "On Leave" }),
+      member({ membership_status: "Former Member" }), // not counted
+      member({ membership_status: "Prospect" }), // not counted
+    ];
+    const stats = computeStats(members);
+    expect(stats.active_members).toBe(2);
+    expect(stats.on_leave_members).toBe(1);
   });
 
   it("counts newly_at_risk (score moved from >=60 to <40)", () => {
@@ -164,7 +179,8 @@ describe("renderDigestHTML", () => {
         },
       ],
       stats: {
-        total_members: 177,
+        active_members: 177,
+        on_leave_members: 0,
         scored_members: 176,
         critical_count: 33,
         high_count: 22,
@@ -190,7 +206,8 @@ describe("renderDigestHTML", () => {
       generated_at: new Date().toISOString(),
       top_risk: [],
       stats: {
-        total_members: 10,
+        active_members: 10,
+        on_leave_members: 0,
         scored_members: 10,
         critical_count: 0,
         high_count: 0,
@@ -218,7 +235,8 @@ describe("renderDigestHTML", () => {
         },
       ],
       stats: {
-        total_members: 1,
+        active_members: 1,
+        on_leave_members: 0,
         scored_members: 1,
         critical_count: 0,
         high_count: 0,
