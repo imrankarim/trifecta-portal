@@ -112,13 +112,12 @@ export default async function BoardPage() {
 }
 
 function RoleCard({ role, members }: { role: BoardRoleDef; members: BoardMemberLite[] }) {
-  const status = computeRoleStatus(role.domain, members);
-  const shown = status.metrics.slice(0, 3);
+  const { headline } = computeRoleStatus(role.domain, members);
 
   return (
     <Link
       href={`/board/${role.key}`}
-      className="block bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all group"
+      className="flex flex-col h-full bg-white border border-gray-200 rounded-lg p-5 hover:border-gray-300 hover:shadow-sm transition-all group"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -138,19 +137,16 @@ function RoleCard({ role, members }: { role: BoardRoleDef; members: BoardMemberL
 
       <p className="text-xs text-gray-500 mt-2 line-clamp-2">{role.blurb}</p>
 
-      {shown.length > 0 ? (
-        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2">
-          {shown.map((mtr) => (
-            <div key={mtr.label}>
-              <div className={`text-lg font-semibold tabular-nums leading-none ${toneClass(mtr.tone)}`}>
-                {mtr.value}
-              </div>
-              <div className="text-[11px] text-gray-500 mt-1">{mtr.label}</div>
-            </div>
-          ))}
+      {/* One role-distinct stat, pinned to the bottom. Roles without a
+          distinct metric simply omit this — keeps cards from repeating
+          chapter-wide numbers. */}
+      {headline && (
+        <div className="mt-auto pt-4 flex items-baseline gap-2">
+          <span className={`text-xl font-semibold tabular-nums ${toneClass(headline.tone)}`}>
+            {headline.value}
+          </span>
+          <span className="text-xs text-gray-500">{headline.label}</span>
         </div>
-      ) : (
-        <p className="mt-4 text-xs text-gray-400 italic">No connected data yet</p>
       )}
     </Link>
   );

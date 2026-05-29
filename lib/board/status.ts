@@ -10,6 +10,12 @@ export interface StatusMetric {
 
 export interface RoleStatus {
   metrics: StatusMetric[];
+  /**
+   * A single role-distinct metric for the overview card. Left undefined for
+   * roles whose only available numbers are chapter-wide (and thus identical
+   * across cards) or that have no backing data yet — those cards show no stat.
+   */
+  headline?: StatusMetric;
   /** Honest note when the role's domain has little or no backing data yet. */
   note?: string;
   linkTo?: string;
@@ -93,6 +99,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
         (m) => m.contact_type === "Member" && m.membership_status === "Prospect",
       ).length;
       return {
+        headline: { label: "At-risk members", value: String(atRisk.length), tone: atRisk.length ? "bad" : "good" },
         metrics: [
           { label: "At-risk members", value: String(atRisk.length), tone: atRisk.length ? "bad" : "good" },
           { label: "Renewal attention", value: String(renewalAttn), tone: renewalAttn ? "warn" : "good" },
@@ -113,6 +120,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
         active.map((m) => m.local_event_attendance_rate_12m).filter((s): s is number => s != null),
       );
       return {
+        headline: { label: "Disengaged members", value: String(disengaged), tone: disengaged ? "warn" : "good" },
         metrics: [
           { label: "Disengaged members", value: String(disengaged), tone: disengaged ? "warn" : "good" },
           { label: "Avg local attendance", value: avgLocal != null ? `${avgLocal}%` : "—", tone: rateTone(avgLocal) },
@@ -148,6 +156,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
         };
       }
       return {
+        headline: { label: "Attending learning", value: String(withLearning), tone: withLearning ? "good" : "warn" },
         metrics: [
           { label: "Learning events tracked", value: String(learningEvents.size), tone: "neutral" },
           { label: "Members attending learning", value: String(withLearning), tone: withLearning ? "good" : "warn" },
@@ -175,6 +184,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
       }
       const overall = avg(forumAvgs);
       return {
+        headline: { label: "Forums at risk", value: String(atRiskForums), tone: atRiskForums ? "bad" : "good" },
         metrics: [
           { label: "Forums", value: String(byForum.size), tone: "neutral" },
           { label: "Avg forum engagement", value: overall != null ? String(overall) : "—", tone: scoreTone(overall) },
@@ -192,6 +202,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
           ["At Risk", "Pending"].includes(m.renewal_status ?? ""),
       ).length;
       return {
+        headline: { label: "Renewals to watch", value: String(renewalAttn), tone: renewalAttn ? "warn" : "good" },
         metrics: [
           { label: "Dues-paying members", value: String(active.length), tone: "neutral" },
           { label: "Renewals needing attention", value: String(renewalAttn), tone: renewalAttn ? "warn" : "good" },
@@ -207,6 +218,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
       const retention =
         active.length + former > 0 ? Math.round((active.length / (active.length + former)) * 100) : null;
       return {
+        headline: { label: "Retention", value: retention != null ? `${retention}%` : "—", tone: rateTone(retention) },
         metrics: [
           { label: "Active members", value: String(active.length), tone: "neutral" },
           { label: "Former members", value: String(former), tone: "neutral" },
@@ -221,6 +233,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
         (m) => String(m.custom_fields?.sap_active ?? "").toLowerCase() === "yes",
       ).length;
       return {
+        headline: { label: "Sponsors (SAPs)", value: String(sponsors.length), tone: sponsors.length ? "good" : "warn" },
         metrics: [
           { label: "Sponsors (SAPs)", value: String(sponsors.length), tone: "neutral" },
           { label: "Active SAPs", value: String(sapActive || sponsors.length), tone: sponsors.length ? "good" : "warn" },
@@ -238,6 +251,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
         (m) => m.slp_engagement_status && !/none|no/i.test(m.slp_engagement_status),
       ).length;
       return {
+        headline: { label: "SLP-engaged", value: String(slpEngaged), tone: slpEngaged ? "good" : "warn" },
         metrics: [
           { label: "Spouse / partner on file", value: String(withSpouse), tone: "neutral" },
           { label: "SLP-engaged members", value: String(slpEngaged), tone: slpEngaged ? "good" : "warn" },
