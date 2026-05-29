@@ -129,6 +129,12 @@ export default async function DashboardHome() {
             >
               Board
             </Link>
+            <Link
+              href="/assistant"
+              className="text-sm text-white bg-indigo-600 border border-indigo-600 px-3 py-1.5 rounded-md hover:bg-indigo-700 transition-colors"
+            >
+              ✨ Assistant
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin"
