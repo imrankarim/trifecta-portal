@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { NoteForm } from "./NoteForm";
+import { ActionForm } from "./ActionForm";
+import { ActionCheckbox } from "./ActionCheckbox";
 
 const TIER_STYLES: Record<string, { bg: string; fg: string; ring: string }> = {
   Critical: { bg: "bg-red-50", fg: "text-red-700", ring: "ring-red-200" },
@@ -35,11 +38,24 @@ interface AttendanceEntry {
 }
 
 interface NoteEntry {
+  id?: string;
   ts?: string;
   text?: string;
   source?: string;
   source_field?: string;
   author_id?: string | null;
+  category?: string;
+}
+
+interface ActionItemEntry {
+  id: string;
+  text: string;
+  created_at: string;
+  created_by: string | null;
+  due_date?: string | null;
+  assigned_to?: string | null;
+  completed_at?: string | null;
+  completed_by?: string | null;
 }
 
 interface LeavePeriod {
@@ -85,7 +101,16 @@ export default async function MemberDetailPage({
   const eoGlobalConfirmed = customFields.eo_global_confirmed_at as string | undefined;
   const spouse = customFields.spouse as Record<string, unknown> | undefined;
   const boardHistory = (m.board_roles_history ?? []) as BoardRoleEntry[];
-  const notes = (m.notes ?? []) as NoteEntry[];
+  const notes = ((m.notes ?? []) as NoteEntry[])
+    .slice()
+    .sort((a, b) => (b.ts ?? "").localeCompare(a.ts ?? ""));
+  const actionItems = ((m.action_items ?? []) as ActionItemEntry[]).slice().sort((a, b) => {
+    // Open actions first (sorted by due date asc, with nulls last), then completed
+    if (!!a.completed_at !== !!b.completed_at) return a.completed_at ? 1 : -1;
+    const da = a.due_date ?? "9999-12-31";
+    const db = b.due_date ?? "9999-12-31";
+    return da.localeCompare(db);
+  });
 
   // Collect all attendance entries from custom_fields.attendance.*
   const attendanceByFy: Record<string, AttendanceEntry[]> = {};
@@ -234,21 +259,38 @@ export default async function MemberDetailPage({
               </Card>
             )}
 
-            {/* Notes */}
-            <Card title="Notes">
+            {/* Action items */}
+            <Card title={`Action items${actionItems.length > 0 ? ` (${actionItems.filter((a) => !a.completed_at).length} open)` : ""}`}>
+              <div className="mb-4">
+                <ActionForm memberId={params.id} />
+              </div>
+              {actionItems.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">
+                  No action items yet. Use the form above to add one.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {actionItems.map((a) => (
+                    <ActionItemRow key={a.id} action={a} memberId={params.id} />
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {/* Notes timeline */}
+            <Card title={`Notes${notes.length > 0 ? ` (${notes.length})` : ""}`}>
+              <div className="mb-4 pb-4 border-b border-gray-100">
+                <NoteForm memberId={params.id} />
+              </div>
               {notes.length === 0 ? (
                 <p className="text-sm text-gray-500 italic">
-                  No notes yet. Chair-logged outreach and AI-extracted context will appear here.
+                  No notes yet. Chair-logged outreach and AI-extracted context (Phase 2)
+                  will appear here.
                 </p>
               ) : (
                 <ul className="space-y-3">
                   {notes.map((n, i) => (
-                    <li key={i} className="border-l-2 border-gray-200 pl-3">
-                      <div className="text-sm text-gray-900">{n.text}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {n.ts ? formatDate(n.ts) : ""} {n.source ? `· ${n.source}` : ""}
-                      </div>
-                    </li>
+                    <NoteRow key={n.id ?? i} note={n} />
                   ))}
                 </ul>
               )}
@@ -375,6 +417,82 @@ export default async function MemberDetailPage({
       </div>
     </main>
   );
+}
+
+function ActionItemRow({ action, memberId }: { action: ActionItemEntry; memberId: string }) {
+  const completed = !!action.completed_at;
+  const overdueClass = (() => {
+    if (completed) return "";
+    if (!action.due_date) return "";
+    const today = new Date().toISOString().slice(0, 10);
+    if (action.due_date < today) return "text-red-700";
+    // Due within 3 days
+    const dueDate = new Date(action.due_date);
+    const soon = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    if (dueDate <= soon) return "text-amber-700";
+    return "text-gray-600";
+  })();
+
+  return (
+    <li className="flex items-start gap-3 py-1">
+      <div className="pt-0.5">
+        <ActionCheckbox memberId={memberId} actionId={action.id} completed={completed} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className={`text-sm ${completed ? "line-through text-gray-400" : "text-gray-900"}`}>
+          {action.text}
+        </div>
+        <div className="flex items-center gap-3 text-xs mt-0.5">
+          {action.due_date && (
+            <span className={overdueClass}>
+              Due {formatDate(action.due_date)}
+            </span>
+          )}
+          {completed && action.completed_at && (
+            <span className="text-gray-400">
+              Completed {formatDate(action.completed_at)}
+            </span>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+function NoteRow({ note }: { note: NoteEntry }) {
+  // Sync-authored notes (from append_to_notes during HubSpot sync) have a
+  // `source` like "hubspot:exit_survey:leaving_reason" instead of an author.
+  const isSync = !!note.source && !note.author_id;
+  return (
+    <li className="border-l-2 border-gray-200 pl-3 py-0.5">
+      <div className="text-sm text-gray-900 whitespace-pre-wrap">{note.text}</div>
+      <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+        {note.ts && <span>{formatDateTime(note.ts)}</span>}
+        {note.category && (
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 text-[10px] uppercase tracking-wide">
+            {note.category}
+          </span>
+        )}
+        {isSync && (
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] uppercase tracking-wide">
+            from {note.source}
+          </span>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
