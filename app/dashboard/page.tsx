@@ -224,9 +224,17 @@ export default async function DashboardPage({
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                       {visible.map((m) => (
-                        <tr key={m.trifecta_member_id} className="hover:bg-gray-50">
+                        <tr
+                          key={m.trifecta_member_id}
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
                           <td className="px-4 py-3 text-gray-900">
-                            {m.first_name} {m.last_name}
+                            <Link
+                              href={`/members/${m.trifecta_member_id}`}
+                              className="hover:text-blue-700"
+                            >
+                              {m.first_name} {m.last_name}
+                            </Link>
                           </td>
                           <td className="px-4 py-3 text-gray-600">{m.email_primary}</td>
                           <td className="px-4 py-3 text-gray-600">{m.company_name ?? "—"}</td>

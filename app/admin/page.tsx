@@ -81,13 +81,24 @@ export default async function AdminPage() {
                 {members.map((m) => (
                   <tr key={m.trifecta_member_id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-gray-900">
-                      {m.first_name} {m.last_name}
+                      <Link
+                        href={`/members/${m.trifecta_member_id}`}
+                        className="hover:text-blue-700"
+                      >
+                        {m.first_name} {m.last_name}
+                      </Link>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{m.email_primary}</td>
                     <td className="px-4 py-3 text-gray-600">{m.company_name}</td>
                     <td className="px-4 py-3 text-gray-600">{m.contact_type}</td>
                     <td className="px-4 py-3 text-gray-600">{m.membership_status ?? "—"}</td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right space-x-3">
+                      <Link
+                        href={`/members/${m.trifecta_member_id}`}
+                        className="text-sm text-gray-600 hover:text-gray-900"
+                      >
+                        View
+                      </Link>
                       <Link
                         href={`/admin/${m.trifecta_member_id}`}
                         className="text-sm text-blue-600 hover:text-blue-800"
