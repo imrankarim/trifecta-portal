@@ -124,6 +124,7 @@ async function main() {
   // Classify each Trifecta member
   const confirmedActive: typeof trif = []; // matched → confirmed Active
   const toDemoteToFormer: typeof trif = []; // currently Active but no EOG match
+  const protectedByOverride: typeof trif = []; // hand-fixed status — never demote
   const matchedTrifIds = new Set<string>();
 
   for (const m of trif) {
@@ -133,9 +134,14 @@ async function main() {
       const candidates = eogByName.get(normName(m.first_name, m.last_name)) ?? [];
       if (candidates.length === 1) matched = candidates[0];
     }
+    // A manual_status_override means a human deliberately set this member's
+    // status; the EO Global xlsx is not authoritative over that decision.
+    const hasOverride = !!(m.custom_fields as Record<string, unknown> | null)?.manual_status_override;
     if (matched) {
       confirmedActive.push(m);
       matchedTrifIds.add(m.trifecta_member_id);
+    } else if (hasOverride) {
+      protectedByOverride.push(m);
     } else if (m.membership_status === "Active") {
       toDemoteToFormer.push(m);
     }
@@ -155,8 +161,16 @@ async function main() {
   console.log("━".repeat(72));
   console.log(`Confirmed Active (matched to EO Global):    ${confirmedActive.length}`);
   console.log(`To demote (Active → Former Member):         ${toDemoteToFormer.length}`);
+  console.log(`Protected by manual_status_override:        ${protectedByOverride.length}`);
   console.log(`EOG members not in Trifecta at all:         ${eogMissing.length}`);
   console.log("━".repeat(72));
+
+  if (protectedByOverride.length > 0) {
+    console.log(`\n── Protected from demotion (hand-fixed status) ──`);
+    for (const m of protectedByOverride) {
+      console.log(`  ${m.first_name} ${m.last_name} — kept as ${m.membership_status}`);
+    }
+  }
 
   if (eogMissing.length > 0) {
     console.log(`\n── EOG members entirely missing from Trifecta — manual review ──`);
