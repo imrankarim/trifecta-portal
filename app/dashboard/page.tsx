@@ -117,6 +117,12 @@ export default async function DashboardHome() {
             >
               Directory
             </Link>
+            <Link
+              href="/forums"
+              className="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Forums
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin"
@@ -242,7 +248,7 @@ export default async function DashboardHome() {
             )}
           </Widget>
 
-          <Widget title="Forum health" badge={forumHealth.length}>
+          <Widget title="Forum health" badge={forumHealth.length} link="/forums">
             {forumHealth.length === 0 ? (
               <EmptyState>
                 Forum data not yet populated. Sync once forums are mapped.
@@ -251,17 +257,22 @@ export default async function DashboardHome() {
               <ul className="divide-y divide-gray-100">
                 {forumHealth.slice(0, 8).map((f) => (
                   <li key={f.forum} className="py-2.5">
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-medium text-gray-900 truncate">{f.forum}</span>
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="text-xs text-gray-500 tabular-nums">{f.size} members</span>
-                        <span
-                          className={`text-sm tabular-nums font-medium w-7 text-right ${forumScoreClass(f.avgScore)}`}
-                        >
-                          {f.avgScore}
-                        </span>
+                    <Link
+                      href={`/forums/${encodeURIComponent(f.forum)}`}
+                      className="block hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-medium text-gray-900 truncate">{f.forum}</span>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-xs text-gray-500 tabular-nums">{f.size} members</span>
+                          <span
+                            className={`text-sm tabular-nums font-medium w-7 text-right ${forumScoreClass(f.avgScore)}`}
+                          >
+                            {f.avgScore}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   </li>
                 ))}
               </ul>
