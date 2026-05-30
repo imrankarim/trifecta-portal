@@ -49,11 +49,11 @@ export function PasteEmailForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? `Failed (${res.status})`);
-      setResult(
-        `Extracted ${data.proposalsCreated} proposal(s)` +
-          (data.unmatched ? ` (${data.unmatched} unmatched member)` : "") +
-          ". See below.",
-      );
+      const parts: string[] = [`Extracted ${data.proposalsCreated} proposal(s)`];
+      if (data.autoApplied) parts.push(`${data.autoApplied} auto-applied (see Activity)`);
+      if (data.queued) parts.push(`${data.queued} queued below`);
+      if (data.unmatched) parts.push(`${data.unmatched} unmatched`);
+      setResult(parts.join(" · "));
       setEmailBody("");
       setSubject("");
       router.refresh();

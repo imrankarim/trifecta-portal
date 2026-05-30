@@ -1,15 +1,10 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  proposalToCanonical,
-  type Proposal,
-  type ActionItemEntry,
-  type NoteEntry,
-} from "@/lib/inbox/applyProposal";
+import { applyExtractionToMember, type ExtractionRecord } from "@/lib/inbox/applyExtraction";
+import { logActivity } from "@/lib/activity/log";
 
 export type InboxActionState = { error: string | null; ok: boolean };
 
@@ -18,18 +13,18 @@ async function gate() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: "Not signed in.", supabase, user: null, memberId: null as string | null };
+  if (!user) return { error: "Not signed in.", memberId: null as string | null };
 
   const { data: role } = await supabase.rpc("current_user_role");
   if (role !== "Admin" && role !== "ExecutiveDirector") {
-    return { error: "You don't have permission.", supabase, user, memberId: null };
+    return { error: "You don't have permission.", memberId: null };
   }
   const { data: me } = await supabase
     .from("members")
     .select("trifecta_member_id")
     .eq("auth_user_id", user.id)
     .maybeSingle();
-  return { error: null, supabase, user, memberId: me?.trifecta_member_id ?? null };
+  return { error: null, memberId: me?.trifecta_member_id ?? null };
 }
 
 export async function rejectExtraction(extractionId: string): Promise<InboxActionState> {
@@ -37,6 +32,12 @@ export async function rejectExtraction(extractionId: string): Promise<InboxActio
   if (g.error) return { error: g.error, ok: false };
 
   const admin = createAdminClient();
+  const { data: ex } = await admin
+    .from("communication_extractions")
+    .select("id, chapter_id, target_member_id, extraction_type")
+    .eq("id", extractionId)
+    .single();
+
   const { error } = await admin
     .from("communication_extractions")
     .update({ status: "rejected", confirmed_by: g.memberId, confirmed_at: new Date().toISOString() })
@@ -44,7 +45,22 @@ export async function rejectExtraction(extractionId: string): Promise<InboxActio
     .eq("status", "proposed");
   if (error) return { error: error.message, ok: false };
 
+  if (ex) {
+    await logActivity(admin, {
+      chapterId: ex.chapter_id,
+      actorType: "user",
+      actorMemberId: g.memberId,
+      action: "proposal_rejected",
+      source: "email",
+      targetType: "member",
+      targetMemberId: ex.target_member_id,
+      summary: `Rejected a proposed ${String(ex.extraction_type).replace(/_/g, " ")}`,
+      reversible: false,
+    });
+  }
+
   revalidatePath("/inbox");
+  revalidatePath("/activity");
   return { error: null, ok: true };
 }
 
@@ -53,82 +69,24 @@ export async function acceptExtraction(extractionId: string): Promise<InboxActio
   if (g.error) return { error: g.error, ok: false };
 
   const admin = createAdminClient();
-
   const { data: ex, error: exErr } = await admin
     .from("communication_extractions")
-    .select("id, extraction_type, payload, confidence, target_member_id, status")
+    .select("id, chapter_id, extraction_type, payload, confidence, target_member_id, status")
     .eq("id", extractionId)
     .single();
   if (exErr || !ex) return { error: "Proposal not found.", ok: false };
   if (ex.status !== "proposed") return { error: "Already reviewed.", ok: false };
-  if (!ex.target_member_id) {
-    return { error: "No member matched — can't apply. Reject it instead.", ok: false };
-  }
 
-  const proposal: Proposal = {
-    extraction_type: ex.extraction_type,
-    payload: (ex.payload ?? {}) as Record<string, unknown>,
-    confidence: ex.confidence,
-  };
-
-  let patch;
-  try {
-    patch = proposalToCanonical(proposal, {
-      confirmerId: g.memberId,
-      now: new Date().toISOString(),
-      newId: () => randomUUID(),
-      sourceLabel: "email",
-    });
-  } catch (e) {
-    return { error: e instanceof Error ? e.message : "Malformed proposal", ok: false };
-  }
-
-  // Read-modify-write the member's canonical fields (matches members/[id]/actions.ts).
-  const memberId = ex.target_member_id as string;
-  const { data: member, error: mErr } = await admin
-    .from("members")
-    .select("notes, action_items")
-    .eq("trifecta_member_id", memberId)
-    .single();
-  if (mErr || !member) return { error: "Member not found.", ok: false };
-
-  const update: Record<string, unknown> = {};
-  if (patch.appendActionItem) {
-    const existing = (member.action_items ?? []) as ActionItemEntry[];
-    update.action_items = [...existing, patch.appendActionItem];
-  }
-  if (patch.appendNote) {
-    const existing = (member.notes ?? []) as NoteEntry[];
-    update.notes = [...existing, patch.appendNote];
-  }
-  if (patch.setRenewal) {
-    update.renewal_intent_response = patch.setRenewal.renewal_intent_response;
-    if (patch.setRenewal.renewal_intent_notes != null) {
-      update.renewal_intent_notes = patch.setRenewal.renewal_intent_notes;
-    }
-  }
-
-  if (Object.keys(update).length > 0) {
-    const { error: upErr } = await admin
-      .from("members")
-      .update(update)
-      .eq("trifecta_member_id", memberId);
-    if (upErr) return { error: upErr.message, ok: false };
-  }
-
-  const { error: markErr } = await admin
-    .from("communication_extractions")
-    .update({
-      status: "accepted",
-      confirmed_by: g.memberId,
-      confirmed_at: new Date().toISOString(),
-      applied_to_canonical: true,
-    })
-    .eq("id", extractionId);
-  if (markErr) return { error: markErr.message, ok: false };
+  const res = await applyExtractionToMember(admin, ex as ExtractionRecord, {
+    confirmerId: g.memberId,
+    actorType: "user",
+    source: "email",
+  });
+  if (!res.ok) return { error: res.error ?? "Could not apply.", ok: false };
 
   revalidatePath("/inbox");
-  revalidatePath(`/members/${memberId}`);
+  revalidatePath("/activity");
+  if (ex.target_member_id) revalidatePath(`/members/${ex.target_member_id}`);
   revalidatePath("/renewals");
   return { error: null, ok: true };
 }

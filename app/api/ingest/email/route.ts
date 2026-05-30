@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { extractFromEmail, type EmailInput } from "@/lib/llm/extractFromEmail";
+import { applyExtractionToMember, type ExtractionRecord } from "@/lib/inbox/applyExtraction";
 
 export const maxDuration = 60;
 
@@ -46,14 +47,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Sender and body are required." }, { status: 400 });
   }
 
-  // Chapter (RLS-scoped to the caller).
+  // Chapter (RLS-scoped to the caller) + per-chapter auto-apply threshold.
   const { data: chapter } = await supabase
     .from("chapters")
-    .select("trifecta_chapter_id")
+    .select("trifecta_chapter_id, data_sources_config")
     .limit(1)
     .single();
   if (!chapter) return NextResponse.json({ error: "No chapter linked" }, { status: 400 });
   const chapterId = chapter.trifecta_chapter_id as string;
+  const emailCfg = ((chapter.data_sources_config ?? {}) as Record<string, unknown>)
+    .email_ingestion as { auto_apply_threshold?: number } | undefined;
+  // High-confidence extractions auto-apply (visible + reversible in /activity);
+  // below this they stay in /inbox for a glance. null/absent → default 0.75.
+  const autoApplyThreshold =
+    typeof emailCfg?.auto_apply_threshold === "number" ? emailCfg.auto_apply_threshold : 0.75;
 
   // Active-member roster so the model can resolve target emails (and we can map
   // proposals to member rows). RLS-scoped read.
@@ -118,28 +125,54 @@ export async function POST(req: Request) {
     );
   }
 
-  // Store each proposal as a pending extraction, resolving the member by email.
+  // Store each proposal. High-confidence + member-matched ones auto-apply
+  // immediately (recorded in /activity, reversible); the rest stay queued in
+  // /inbox for a quick human glance.
   let created = 0;
+  let autoApplied = 0;
+  let queued = 0;
   let unmatched = 0;
   for (const p of extraction.proposals) {
     const member = p.target_email ? memberByEmail.get(p.target_email.toLowerCase()) : undefined;
     if (!member) unmatched++;
-    const { error: exErr } = await admin.from("communication_extractions").insert({
-      communication_id: commRow.id,
-      chapter_id: chapterId,
-      extraction_type: p.extraction_type,
-      target_member_id: member?.trifecta_member_id ?? null,
-      payload: p.payload ?? {},
-      confidence: typeof p.confidence === "number" ? p.confidence : null,
-      status: "proposed",
-    });
-    if (!exErr) created++;
+    const confidence = typeof p.confidence === "number" ? p.confidence : null;
+
+    const { data: exRow, error: exErr } = await admin
+      .from("communication_extractions")
+      .insert({
+        communication_id: commRow.id,
+        chapter_id: chapterId,
+        extraction_type: p.extraction_type,
+        target_member_id: member?.trifecta_member_id ?? null,
+        payload: p.payload ?? {},
+        confidence,
+        status: "proposed",
+      })
+      .select("id, chapter_id, extraction_type, payload, confidence, target_member_id")
+      .single();
+    if (exErr || !exRow) continue;
+    created++;
+
+    const eligible = !!member && confidence != null && confidence >= autoApplyThreshold;
+    if (eligible) {
+      const res = await applyExtractionToMember(admin, exRow as ExtractionRecord, {
+        confirmerId: null,
+        actorType: "system",
+        source: "email",
+      });
+      if (res.ok) autoApplied++;
+      else queued++;
+    } else {
+      queued++;
+    }
   }
 
   return NextResponse.json({
     communicationId: commRow.id,
     classification: extraction.classification ?? null,
     proposalsCreated: created,
+    autoApplied,
+    queued,
     unmatched,
   });
 }
