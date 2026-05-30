@@ -12,6 +12,17 @@ const TIER_STYLES: Record<string, string> = {
   Monitor: "bg-gray-100 text-gray-700 ring-gray-200",
 };
 
+const ACTIVE_STATUSES = new Set(["Active", "Grace Period", "Lapsed"]);
+
+interface ActivityRow {
+  id: string;
+  actor_type: string;
+  action: string;
+  summary: string;
+  created_at: string;
+  reverted_at: string | null;
+}
+
 // What a chair sees first thing Monday: this week's priorities, not a table.
 // Five widgets that ALL link through to /members/[id] for actionable drill-in:
 //   1. My Open Actions   — across all members, sorted by due date
@@ -101,6 +112,30 @@ export default async function DashboardHome() {
   const renewalAttn = collectRenewalAttention(members);
   const forumHealth = collectForumHealth(members);
   const recentlyAdded = collectRecentlyAdded(members);
+  const renewals = collectRenewalBuckets(members);
+
+  // Headline chapter metrics for the stat strip.
+  const activeMembers = members.filter(
+    (m) => m.contact_type === "Member" && ACTIVE_STATUSES.has(m.membership_status ?? ""),
+  );
+  const scores = activeMembers
+    .map((m) => m.engagement_score_current)
+    .filter((s): s is number => s != null);
+  const chapterHealth = scores.length
+    ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+    : null;
+
+  // Inbox + activity — quick reads (RLS-scoped to the caller's chapter).
+  const { count: pendingProposals } = await supabase
+    .from("communication_extractions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "proposed");
+  const { data: rawActivity } = await supabase
+    .from("system_activity")
+    .select("id, actor_type, action, summary, created_at, reverted_at")
+    .order("created_at", { ascending: false })
+    .limit(6);
+  const recentActivity = (rawActivity ?? []) as unknown as ActivityRow[];
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -187,6 +222,43 @@ export default async function DashboardHome() {
           </p>
         </section>
 
+        {/* Headline stats — each tile links into its deeper view */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-6">
+          <Stat
+            label="Active members"
+            value={String(activeMembers.length)}
+            href="/dashboard/directory"
+          />
+          <Stat
+            label="At risk"
+            value={String(topAtRisk.length)}
+            tone={topAtRisk.length ? "bad" : "good"}
+            href="/dashboard/directory"
+          />
+          <Stat
+            label="Renewals secured"
+            value={`${renewals.securedPct}%`}
+            tone={renewals.securedPct >= 60 ? "good" : renewals.securedPct >= 40 ? "warn" : "bad"}
+            hint={`${renewals.renewed + renewals.will}/${renewals.total}`}
+            href="/renewals"
+          />
+          <Stat
+            label="Chapter health"
+            value={chapterHealth != null ? String(chapterHealth) : "—"}
+            tone={chapterHealth == null ? "neutral" : chapterHealth >= 60 ? "good" : chapterHealth >= 40 ? "warn" : "bad"}
+            href="/board"
+          />
+          {isAdmin && (
+            <Stat
+              label="To review"
+              value={String(pendingProposals ?? 0)}
+              tone={(pendingProposals ?? 0) > 0 ? "warn" : "neutral"}
+              hint="AI proposals"
+              href="/inbox"
+            />
+          )}
+        </div>
+
         {/* Widget grid */}
         <div className="grid lg:grid-cols-2 gap-6">
           <Widget title="My open actions" badge={myActions.length} link={null}>
@@ -253,27 +325,53 @@ export default async function DashboardHome() {
             )}
           </Widget>
 
-          <Widget title="Renewal attention" badge={renewalAttn.length}>
+          <Widget title="Renewals" link="/renewals">
+            <RenewalBar buckets={renewals} />
             {renewalAttn.length === 0 ? (
-              <EmptyState>No renewal issues flagged. Members are quiet here.</EmptyState>
+              <p className="text-sm text-gray-500 italic mt-4">No one flagged as undecided or leaving.</p>
+            ) : (
+              <>
+                <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 mt-4 mb-1">
+                  Needs a conversation
+                </div>
+                <ul className="divide-y divide-gray-100">
+                  {renewalAttn.slice(0, 6).map((m) => (
+                    <li key={m.trifecta_member_id} className="py-2.5">
+                      <Link
+                        href={`/members/${m.trifecta_member_id}`}
+                        className="block hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-sm font-medium text-gray-900 truncate">
+                            {m.first_name} {m.last_name}
+                          </span>
+                          <RenewalChip intent={m.renewal_intent_response} status={m.renewal_status} />
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">{m.company_name ?? ""}</div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </Widget>
+
+          <Widget title="Recent activity" link="/activity">
+            {recentActivity.length === 0 ? (
+              <EmptyState>
+                Nothing yet. As Trifecta acts — auto-applying email updates, syncing — it shows here.
+              </EmptyState>
             ) : (
               <ul className="divide-y divide-gray-100">
-                {renewalAttn.slice(0, 8).map((m) => (
-                  <li key={m.trifecta_member_id} className="py-2.5">
-                    <Link
-                      href={`/members/${m.trifecta_member_id}`}
-                      className="block hover:bg-gray-50 -mx-2 px-2 rounded transition-colors"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="text-sm font-medium text-gray-900 truncate">
-                          {m.first_name} {m.last_name}
-                        </span>
-                        <RenewalChip intent={m.renewal_intent_response} status={m.renewal_status} />
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {m.company_name ?? ""}
-                      </div>
-                    </Link>
+                {recentActivity.map((a) => (
+                  <li key={a.id} className="py-2.5">
+                    <div className={`text-sm ${a.reverted_at ? "text-gray-400 line-through" : "text-gray-900"}`}>
+                      {a.summary}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {a.actor_type === "system" ? "Trifecta" : "A chair"} · {formatRelative(a.created_at)}
+                      {a.reverted_at ? " · undone" : ""}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -451,6 +549,37 @@ function collectRecentlyAdded(members: MemberRow[]): MemberRow[] {
     .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
 }
 
+interface RenewalBuckets {
+  renewed: number;
+  will: number;
+  undecided: number;
+  noResponse: number;
+  wont: number;
+  total: number;
+  securedPct: number;
+}
+
+function collectRenewalBuckets(members: MemberRow[]): RenewalBuckets {
+  const active = members.filter(
+    (m) => m.contact_type === "Member" && ACTIVE_STATUSES.has(m.membership_status ?? ""),
+  );
+  let renewed = 0;
+  let will = 0;
+  let undecided = 0;
+  let wont = 0;
+  let noResponse = 0;
+  for (const m of active) {
+    if (m.renewal_status === "Renewed") renewed++;
+    else if (m.renewal_intent_response === "PlanToRenew") will++;
+    else if (m.renewal_intent_response === "WantToSpeak") undecided++;
+    else if (m.renewal_intent_response === "WontRenew") wont++;
+    else noResponse++;
+  }
+  const total = active.length;
+  const securedPct = total ? Math.round(((renewed + will) / total) * 100) : 0;
+  return { renewed, will, undecided, noResponse, wont, total, securedPct };
+}
+
 // ────────────────────────────────────────────────────────────────────────
 // UI primitives
 // ────────────────────────────────────────────────────────────────────────
@@ -490,6 +619,72 @@ function Widget({
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-gray-500 italic">{children}</p>;
+}
+
+function Stat({
+  label,
+  value,
+  tone = "neutral",
+  hint,
+  href,
+}: {
+  label: string;
+  value: string;
+  tone?: "good" | "warn" | "bad" | "neutral";
+  hint?: string;
+  href?: string;
+}) {
+  const valueClass = {
+    good: "text-green-700",
+    warn: "text-amber-700",
+    bad: "text-red-700",
+    neutral: "text-gray-900",
+  }[tone];
+  const inner = (
+    <>
+      <div className="text-xs uppercase tracking-wide text-gray-500">{label}</div>
+      <div className={`text-2xl font-semibold tabular-nums mt-1 ${valueClass}`}>{value}</div>
+      {hint && <div className="text-xs text-gray-400 mt-0.5">{hint}</div>}
+    </>
+  );
+  return href ? (
+    <Link href={href} className="block bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-sm transition-all">
+      {inner}
+    </Link>
+  ) : (
+    <div className="bg-white border border-gray-200 rounded-lg p-4">{inner}</div>
+  );
+}
+
+function RenewalBar({ buckets }: { buckets: RenewalBuckets }) {
+  const segs = [
+    { n: buckets.renewed, label: "Renewed", color: "bg-green-500" },
+    { n: buckets.will, label: "Will renew", color: "bg-blue-500" },
+    { n: buckets.undecided, label: "Undecided", color: "bg-amber-500" },
+    { n: buckets.noResponse, label: "No response", color: "bg-gray-300" },
+    { n: buckets.wont, label: "Not renewing", color: "bg-red-500" },
+  ];
+  const total = buckets.total || 1;
+  return (
+    <div>
+      <div className="flex h-2.5 rounded-full overflow-hidden bg-gray-100">
+        {segs.map(
+          (s) =>
+            s.n > 0 && (
+              <div key={s.label} className={s.color} style={{ width: `${(s.n / total) * 100}%` }} title={`${s.label}: ${s.n}`} />
+            ),
+        )}
+      </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+        {segs.map((s) => (
+          <span key={s.label} className="inline-flex items-center gap-1.5 text-xs text-gray-600">
+            <span className={`inline-block w-2 h-2 rounded-full ${s.color}`} />
+            {s.label} <span className="tabular-nums font-medium text-gray-900">{s.n}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function DueBadge({ dueDate }: { dueDate?: string | null }) {
