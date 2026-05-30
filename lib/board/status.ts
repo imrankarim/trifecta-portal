@@ -92,8 +92,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
     case "membership": {
       const renewalAttn = active.filter(
         (m) =>
-          ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response ?? "") ||
-          ["At Risk", "Pending"].includes(m.renewal_status ?? ""),
+          ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response ?? ""),
       ).length;
       const prospects = members.filter(
         (m) => m.contact_type === "Member" && m.membership_status === "Prospect",
@@ -198,8 +197,7 @@ export function computeRoleStatus(domain: BoardDomain, members: BoardMemberLite[
     case "finance": {
       const renewalAttn = active.filter(
         (m) =>
-          ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response ?? "") ||
-          ["At Risk", "Pending"].includes(m.renewal_status ?? ""),
+          ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response ?? ""),
       ).length;
       return {
         headline: { label: "Renewals to watch", value: String(renewalAttn), tone: renewalAttn ? "warn" : "good" },

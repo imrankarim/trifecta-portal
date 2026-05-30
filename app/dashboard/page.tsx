@@ -124,6 +124,12 @@ export default async function DashboardHome() {
               Forums
             </Link>
             <Link
+              href="/renewals"
+              className="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
+            >
+              Renewals
+            </Link>
+            <Link
               href="/board"
               className="text-sm text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50 transition-colors"
             >
@@ -389,9 +395,8 @@ function collectRenewalAttention(members: MemberRow[]): MemberRow[] {
       (m) =>
         m.contact_type === "Member" &&
         m.membership_status === "Active" &&
-        ((m.renewal_intent_response &&
-          ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response)) ||
-          (m.renewal_status && ["At Risk", "Pending"].includes(m.renewal_status))),
+        m.renewal_intent_response != null &&
+        ["WontRenew", "WantToSpeak"].includes(m.renewal_intent_response),
     )
     .sort((a, b) => {
       // WontRenew is the most urgent

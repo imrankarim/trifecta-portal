@@ -389,9 +389,15 @@ export default async function MemberDetailPage({
               <dl className="space-y-2 text-sm">
                 <DefRow label="Join date" value={formatDate(m.join_date_original as string)} />
                 <DefRow label="Renewal status" value={m.renewal_status as string} />
-                <DefRow label="Renewal intent" value={m.renewal_intent_response as string} />
+                <DefRow label="Renewal intent" value={humanizeRenewalIntent(m.renewal_intent_response as string | null)} />
                 <DefRow label="EOA member" value={m.eoa_member as boolean | null} />
               </dl>
+              {typeof m.renewal_intent_notes === "string" && m.renewal_intent_notes.trim() && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="text-xs uppercase tracking-wide text-gray-500 mb-1">Renewal note</div>
+                  <p className="text-sm text-gray-700 italic">“{m.renewal_intent_notes}”</p>
+                </div>
+              )}
             </Card>
 
             {/* Source */}
@@ -643,6 +649,21 @@ function signalToneClass(tone: "good" | "warn" | "bad" | "neutral"): string {
       return "text-red-700";
     default:
       return "text-gray-700";
+  }
+}
+
+function humanizeRenewalIntent(intent: string | null): string | null {
+  switch (intent) {
+    case "PlanToRenew":
+      return "Will renew";
+    case "WantToSpeak":
+      return "Undecided — wants to talk";
+    case "WontRenew":
+      return "Not renewing";
+    case "NoResponse":
+      return "No response yet";
+    default:
+      return intent;
   }
 }
 
