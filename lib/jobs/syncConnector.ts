@@ -141,7 +141,11 @@ export async function syncConnector(opts: SyncConnectorOptions): Promise<SyncRes
       opts.sourceName,
     );
     const emailIndex = await loadEmailIndex(opts.supabase, opts.chapterId);
-    log(`pre-loaded ${externalIdIndex.size} external_ids and ${emailIndex.size} emails`);
+    const statusLockedIndex = await loadStatusLockedIndex(opts.supabase, opts.chapterId);
+    log(
+      `pre-loaded ${externalIdIndex.size} external_ids, ${emailIndex.size} emails, ` +
+        `${statusLockedIndex.size} status-locked members`,
+    );
 
     // ── 6. Process records ────────────────────────────────────────────
     let i = 0;
@@ -171,7 +175,7 @@ export async function syncConnector(opts: SyncConnectorOptions): Promise<SyncRes
           if (existing) result.membersUpdated++;
           else result.membersInserted++;
         } else {
-          const wasNew = await writeRecord(opts.supabase, opts.chapterId, opts.sourceName, plan, externalIdIndex, emailIndex);
+          const wasNew = await writeRecord(opts.supabase, opts.chapterId, opts.sourceName, plan, externalIdIndex, emailIndex, statusLockedIndex);
           if (wasNew) result.membersInserted++;
           else result.membersUpdated++;
         }
@@ -340,6 +344,36 @@ async function loadEmailIndex(
   return map;
 }
 
+/**
+ * Members whose membership_status is managed inside Trifecta, not by the
+ * source: hand-set via manual_status_override, or a reconciled On Leave period.
+ * The sync must NOT overwrite these — otherwise the join_date→Active fallback
+ * rule silently reverts them on the next run.
+ *
+ * NOTE (follow-up): this only protects rows carrying an explicit marker. It does
+ * NOT prevent the sync from re-promoting a genuinely-Former member (demoted by
+ * the EO Global reconcile, which leaves no positive marker) back to Active when
+ * that contact is modified in HubSpot. The durable fix is status provenance —
+ * tracking whether a status came from the source, a reconcile, or a human — and
+ * is intentionally deferred.
+ */
+async function loadStatusLockedIndex(
+  supabase: SupabaseClient,
+  chapterId: string,
+): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("members")
+    .select("trifecta_member_id, custom_fields")
+    .eq("chapter_id", chapterId);
+  if (error) throw new Error(`failed to load status-locked index: ${error.message}`);
+  const set = new Set<string>();
+  for (const row of data ?? []) {
+    const cf = (row.custom_fields ?? {}) as Record<string, unknown>;
+    if (cf.manual_status_override || cf.leave_period) set.add(String(row.trifecta_member_id));
+  }
+  return set;
+}
+
 function resolveExisting(
   plan: WritePlan,
   externalIdIndex: Map<string, string>,
@@ -367,6 +401,7 @@ async function writeRecord(
   plan: WritePlan,
   externalIdIndex: Map<string, string>,
   emailIndex: Map<string, string>,
+  statusLockedIndex: Set<string>,
 ): Promise<boolean> {
   // We need an EO region for new rows (NOT NULL on schema). Get it from the chapter.
   // (Cached call ideally; for simplicity inline lookup. For 2,500 records this
@@ -387,6 +422,12 @@ async function writeRecord(
     // writing lifecycle values to non-Members.
     if (plan.contactType && plan.contactType !== "Member") {
       updates.membership_status = null;
+    }
+    // Guard: never overwrite a Trifecta-managed status (manual override or a
+    // reconciled On Leave period). Without this, the join_date→Active fallback
+    // rule reverts hand-set statuses on every sync.
+    if (statusLockedIndex.has(memberId) && "membership_status" in updates) {
+      delete updates.membership_status;
     }
     if (Object.keys(updates).length > 0) {
       const { error } = await supabase
