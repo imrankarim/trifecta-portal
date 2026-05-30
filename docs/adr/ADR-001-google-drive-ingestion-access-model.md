@@ -27,7 +27,22 @@ Trifecta authenticates against each chapter's mailbox via OAuth with a long-live
 
 The domain Trifecta will use will be acquired by the founder and confirmed in a follow-up update to this ADR. Until then, code paths that need a placeholder may use `<trifecta-domain>` or an environment-configured value.
 
-## Alternatives considered
+### Update (2026-05-29) — ownership reconfirmed for email ingestion
+
+The Trifecta-owned vs chapter-owned mailbox question was deliberately revisited
+when scoping email ingestion (ADR-006). Decision **stands: Trifecta-owned**, and
+the same per-chapter Trifecta identity serves both Drive sharing and email
+CC/BCC (one identity per chapter, not two). Rationale, weighing onboarding
+friction, reliability, and uniformity across hundreds of heterogeneous chapters,
+favors Trifecta-owned decisively.
+
+The main counter-argument — chapters distrusting confidential member email routed
+to an external `@trifecta` domain — was assessed as a non-issue: **chapters
+already CC/BCC a third-party vendor (HubSpot) on prospect and operational
+email today**, so copying Trifecta is the same established pattern. A
+chapter-branded alias (`trifecta@eochapter.org` → `<chapter>@<trifecta-domain>`)
+remains an *optional* nicety for chapters that want a native-looking address, but
+is not required for adoption.
 
 ### (A) Trifecta service account + shared folder per board member
 
