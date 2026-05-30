@@ -99,6 +99,19 @@ The chair's workflow doesn't change. The system does the synthesis. Hallucinatio
 
 This is a product-level rule, not a configuration option, mirroring ADR-002.
 
+> **Update (2026-05-30) — forum-exclusion removed (reversible).** The blunt
+> keyword-based forum guard was removed in implementation. In practice it
+> over-blocked: a keyword match on "forum" discarded operationally-useful,
+> non-confidential signals the board needs — a failing forum, members
+> joining/leaving/moving forums, a forum needing a moderator. Founder decision
+> (Imran Karim): capture everything for now; do not pre-build a guardrail no
+> chapter has asked for. **Residual tradeoff, accepted:** genuinely confidential
+> forum *discussion content* could now be ingested/extracted. If a chapter
+> raises this, reintroduce a **content-aware** guard (exclude confidential forum
+> discussion content; keep operational/meta forum signals — ideally as a
+> dedicated `forum_signal` extraction type for the Forum Co-Chairs), rather than
+> the keyword block.
+
 ### Implications for the codebase
 
 **Schema generalization.** The `meeting_summaries` / `meeting_extractions` table names from ADR-002 are kind-specific. With this ADR they generalize to:
