@@ -47,6 +47,39 @@ if (Math.abs(WEIGHT_SUM - 1.0) > 0.0001) {
   throw new Error(`WEIGHTS must sum to 1.0; got ${WEIGHT_SUM}`);
 }
 
+/** The tunable weight set. Keys match WEIGHTS. */
+export type ScoringWeights = Record<keyof typeof WEIGHTS, number>;
+
+/**
+ * Validate a chapter's saved weights (from chapters.scoring_weights JSONB).
+ * Returns a complete ScoringWeights only if every key is a finite number >= 0
+ * and at least one is positive; otherwise null (caller falls back to defaults).
+ * We don't require them to sum to 1.0 — computeEngagementScore normalizes.
+ */
+export function parseScoringWeights(raw: unknown): ScoringWeights | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  const out = {} as ScoringWeights;
+  let positive = 0;
+  for (const key of Object.keys(WEIGHTS) as Array<keyof typeof WEIGHTS>) {
+    const v = obj[key];
+    if (typeof v !== "number" || !Number.isFinite(v) || v < 0) return null;
+    out[key] = v;
+    if (v > 0) positive++;
+  }
+  return positive > 0 ? out : null;
+}
+
+function normalizeWeights(w: ScoringWeights): ScoringWeights {
+  const sum = Object.values(w).reduce((a, b) => a + b, 0);
+  if (sum <= 0) return { ...WEIGHTS };
+  const out = {} as ScoringWeights;
+  for (const key of Object.keys(w) as Array<keyof ScoringWeights>) {
+    out[key] = w[key] / sum;
+  }
+  return out;
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Tier thresholds (upper bounds of each band on the 0–100 score)
 // ─────────────────────────────────────────────────────────────────────
@@ -180,7 +213,15 @@ function scoreFromRecency(daysSince: number | null | undefined): number | null {
 // Main scoring function
 // ─────────────────────────────────────────────────────────────────────
 
-export function computeEngagementScore(inputs: ScoringInputs): ScoringOutput {
+export function computeEngagementScore(
+  inputs: ScoringInputs,
+  weights: ScoringWeights = WEIGHTS,
+): ScoringOutput {
+  // Default path (weights omitted) is byte-identical to before. Custom weights
+  // are normalized to sum 1.0 so `confidence` keeps its "fraction of weight
+  // available" meaning regardless of the slider scale the caller used.
+  const w = weights === WEIGHTS ? WEIGHTS : normalizeWeights(weights);
+
   const components: ScoringOutput["components"] = {
     forum: scoreFromPercentage(inputs.forum_attendance_rate_12m),
     local_events: scoreFromPercentage(inputs.local_event_attendance_rate_12m),
@@ -193,12 +234,12 @@ export function computeEngagementScore(inputs: ScoringInputs): ScoringOutput {
   // Confidence-aware weighting: only signals with data contribute, and only
   // their weights count toward the total weight applied.
   const signalEntries = [
-    ["forum_attendance_12m", components.forum, WEIGHTS.forum_attendance_12m],
-    ["local_event_attendance_12m", components.local_events, WEIGHTS.local_event_attendance_12m],
-    ["slp_engagement", components.slp, WEIGHTS.slp_engagement],
-    ["whatsapp_activity", components.whatsapp, WEIGHTS.whatsapp_activity],
-    ["global_event_count_24m", components.global_events, WEIGHTS.global_event_count_24m],
-    ["recency_of_last_engagement", components.recency, WEIGHTS.recency_of_last_engagement],
+    ["forum_attendance_12m", components.forum, w.forum_attendance_12m],
+    ["local_event_attendance_12m", components.local_events, w.local_event_attendance_12m],
+    ["slp_engagement", components.slp, w.slp_engagement],
+    ["whatsapp_activity", components.whatsapp, w.whatsapp_activity],
+    ["global_event_count_24m", components.global_events, w.global_event_count_24m],
+    ["recency_of_last_engagement", components.recency, w.recency_of_last_engagement],
   ] as const;
 
   let weightedSum = 0;

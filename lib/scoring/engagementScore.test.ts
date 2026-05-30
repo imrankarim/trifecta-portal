@@ -1,9 +1,11 @@
 import { describe, it, expect } from "vitest";
 import {
   computeEngagementScore,
+  parseScoringWeights,
   tierForScore,
   WEIGHTS,
   TIER_THRESHOLDS,
+  type ScoringWeights,
 } from "./engagementScore";
 
 // ─────────────────────────────────────────────────────────────────────
@@ -275,5 +277,69 @@ describe("realistic scenarios", () => {
     const result = computeEngagementScore({});
     expect(result.confidence).toBe(0);
     expect(result.tier).toBe("Monitor"); // not Critical — we don't know enough to label them at-risk
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Custom per-chapter weights
+// ─────────────────────────────────────────────────────────────────────
+describe("custom weights", () => {
+  const inputs = {
+    forum_attendance_rate_12m: 90,
+    local_event_attendance_rate_12m: 10,
+  };
+
+  it("omitting weights matches passing WEIGHTS explicitly", () => {
+    const a = computeEngagementScore(inputs);
+    const b = computeEngagementScore(inputs, { ...WEIGHTS });
+    expect(b.score).toBe(a.score);
+    expect(b.tier).toBe(a.tier);
+  });
+
+  it("weighting a signal more pulls the score toward it", () => {
+    // Forum 90, local 10. Heavier forum weight → higher score than heavier local.
+    const forumHeavy: ScoringWeights = {
+      forum_attendance_12m: 0.9,
+      local_event_attendance_12m: 0.1,
+      slp_engagement: 0,
+      whatsapp_activity: 0,
+      global_event_count_24m: 0,
+      recency_of_last_engagement: 0,
+    };
+    const localHeavy: ScoringWeights = { ...forumHeavy, forum_attendance_12m: 0.1, local_event_attendance_12m: 0.9 };
+    expect(computeEngagementScore(inputs, forumHeavy).score).toBeGreaterThan(
+      computeEngagementScore(inputs, localHeavy).score,
+    );
+  });
+
+  it("un-normalized weights are normalized (only ratios matter)", () => {
+    const scaled: ScoringWeights = {
+      forum_attendance_12m: 70,
+      local_event_attendance_12m: 30,
+      slp_engagement: 0,
+      whatsapp_activity: 0,
+      global_event_count_24m: 0,
+      recency_of_last_engagement: 0,
+    };
+    const fractional: ScoringWeights = { ...scaled, forum_attendance_12m: 0.7, local_event_attendance_12m: 0.3 };
+    const a = computeEngagementScore(inputs, scaled);
+    const b = computeEngagementScore(inputs, fractional);
+    expect(a.score).toBe(b.score);
+    expect(a.confidence).toBeCloseTo(b.confidence, 5);
+  });
+});
+
+describe("parseScoringWeights", () => {
+  it("accepts a complete, valid weight set", () => {
+    expect(parseScoringWeights({ ...WEIGHTS })).not.toBeNull();
+  });
+  it("rejects null / non-object / missing keys / negatives / all-zero", () => {
+    expect(parseScoringWeights(null)).toBeNull();
+    expect(parseScoringWeights("nope")).toBeNull();
+    expect(parseScoringWeights({ forum_attendance_12m: 1 })).toBeNull(); // missing keys
+    const neg = { ...WEIGHTS, forum_attendance_12m: -1 };
+    expect(parseScoringWeights(neg)).toBeNull();
+    const zeros = Object.fromEntries(Object.keys(WEIGHTS).map((k) => [k, 0]));
+    expect(parseScoringWeights(zeros)).toBeNull();
   });
 });

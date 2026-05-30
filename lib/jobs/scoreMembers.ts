@@ -11,7 +11,12 @@
 // separate commit alongside the at-risk digest send).
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { computeEngagementScore, type ChurnRiskTier } from "../scoring/engagementScore";
+import {
+  computeEngagementScore,
+  parseScoringWeights,
+  type ChurnRiskTier,
+  type ScoringWeights,
+} from "../scoring/engagementScore";
 import {
   deriveScoringInputs,
   computeChapterEventCounts,
@@ -80,6 +85,19 @@ export async function scoreMembers(opts: ScoreMembersOptions): Promise<ScoreMemb
   };
 
   try {
+    // 0. Load this chapter's tunable scoring weights (null → code defaults).
+    let weights: ScoringWeights | undefined;
+    const { data: chapterRow } = await opts.supabase
+      .from("chapters")
+      .select("scoring_weights")
+      .eq("trifecta_chapter_id", opts.chapterId)
+      .single();
+    const parsed = parseScoringWeights(chapterRow?.scoring_weights);
+    if (parsed) {
+      weights = parsed;
+      log("using chapter-specific scoring weights");
+    }
+
     // 1. Load all members for the chapter
     const { data: members, error: loadErr } = await opts.supabase
       .from("members")
@@ -120,7 +138,7 @@ export async function scoreMembers(opts: ScoreMembersOptions): Promise<ScoreMemb
 
       try {
         const inputs = deriveScoringInputs(m, { asOf: startedAt, chapterEventCounts });
-        const output = computeEngagementScore(inputs);
+        const output = computeEngagementScore(inputs, weights ?? undefined);
 
         const prevScore = m.engagement_score_current;
         const trend = computeTrend(prevScore, output.score);

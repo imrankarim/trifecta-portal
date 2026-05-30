@@ -48,6 +48,12 @@ export default async function AdminPage() {
             </Link>
             <SyncButton />
             <Link
+              href="/admin/scoring"
+              className="text-sm text-gray-700 border border-gray-300 px-3 py-1.5 rounded-md hover:bg-gray-50"
+            >
+              Scoring weights
+            </Link>
+            <Link
               href="/admin/new"
               className="bg-gray-900 text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-gray-800"
             >

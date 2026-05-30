@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { syncConnector, type SyncResult } from "@/lib/jobs/syncConnector";
+import { scoreMembers, type ScoreMembersResult } from "@/lib/jobs/scoreMembers";
+import { parseScoringWeights } from "@/lib/scoring/engagementScore";
 
 export type MemberFormState = { error: string | null };
 
@@ -167,6 +169,77 @@ export async function runHubSpotSync(
 
     revalidatePath("/admin");
     revalidatePath("/dashboard");
+    return { result, error: null };
+  } catch (e) {
+    return { result: null, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export type SaveWeightsState = {
+  result: ScoreMembersResult | null;
+  error: string | null;
+};
+
+const WEIGHT_KEYS = [
+  "forum_attendance_12m",
+  "local_event_attendance_12m",
+  "slp_engagement",
+  "whatsapp_activity",
+  "global_event_count_24m",
+  "recency_of_last_engagement",
+] as const;
+
+export async function saveScoringWeights(
+  _prev: SaveWeightsState,
+  formData: FormData,
+): Promise<SaveWeightsState> {
+  try {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { result: null, error: "Not signed in." };
+
+    const { data: role } = await supabase.rpc("current_user_role");
+    if (role !== "Admin" && role !== "ExecutiveDirector") {
+      return { result: null, error: "You don't have permission to change scoring." };
+    }
+
+    const { data: chapter } = await supabase
+      .from("chapters")
+      .select("trifecta_chapter_id")
+      .limit(1)
+      .single();
+    if (!chapter) return { result: null, error: "No chapter linked to your account." };
+
+    // Slider values are relative importances (0–100); scoring normalizes them.
+    const weights: Record<string, number> = {};
+    for (const k of WEIGHT_KEYS) {
+      const raw = formData.get(k);
+      const n = typeof raw === "string" ? Number(raw) : NaN;
+      weights[k] = Number.isFinite(n) && n >= 0 ? n : 0;
+    }
+    const parsed = parseScoringWeights(weights);
+    if (!parsed) return { result: null, error: "Set at least one signal above zero." };
+
+    // chapters + cross-member writes bypass RLS via the service-role client.
+    const admin = createAdminClient();
+    const { error: upErr } = await admin
+      .from("chapters")
+      .update({ scoring_weights: parsed })
+      .eq("trifecta_chapter_id", chapter.trifecta_chapter_id);
+    if (upErr) return { result: null, error: upErr.message };
+
+    // Re-score immediately so the impact is visible. scoreMembers reads the
+    // weights we just saved.
+    const result = await scoreMembers({
+      supabase: admin,
+      chapterId: chapter.trifecta_chapter_id,
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/board");
+    revalidatePath("/admin/scoring");
     return { result, error: null };
   } catch (e) {
     return { result: null, error: e instanceof Error ? e.message : String(e) };
